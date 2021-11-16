@@ -1,0 +1,32 @@
+Remain the same:
+    1. catalogue.py
+    2. cosmology.py
+    3. galaxy_catalogue.py
+    4. galaxy_catalogue_snapshot.py
+    5. halo_catalogue.py
+    6. hod.py
+    7. __init__.py
+    8. lookup.py
+
+    2. spline.py
+    3. hod.py
+    4. halo_catalogue.py
+    5. cosmology.py
+    6. catalogue.py
+    7. galaxy_catalogue.py
+    8. lookup.py
+
+
+Amend following:
+    1. k_correction.py:
+        discard this class since we do not need to link two survey up.
+    2. luminosity_function.py
+    halo_bgs.py:
+        number_centals_mean
+    2. k_correction.py:
+        take SDSS as an example, discard k_correction, since our data had already k_corrected.
+    3. hod_bgs.py:
+        number_centals_mean: 
+
+
+
