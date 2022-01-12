@@ -1,0 +1,6 @@
+*.fits
+*.hdf5
+*.pyc
+*.lock
+*.log*
+
