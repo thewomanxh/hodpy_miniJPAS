@@ -117,8 +117,7 @@ class CosmologyPino(Cosmology):
     def __init__(self):
         cosmo_nbody = cosmology_nbodykit.Planck15
         cosmo_nbody = cosmo_nbody.clone(Omega0_b=0.0486, Omega0_cdm=0.3089-0.0486, h=0.6774, n_s=0.9667)
-        cosmo_nbody = cosmo_nbody.match(sigma8=0.9)
-        ## Xiu: sigma8 needs to check.
+        cosmo_nbody = cosmo_nbody.match(sigma8=0.8161)
         super().__init__(cosmo_nbody)
 
 
