@@ -26,7 +26,7 @@ Amend following:
     
     2. luminosity_function.py
         redshift 0.1 has been changed to 0.4; 
-        __initialize_target_lf: comment transition at the faint end and power loa fit to the faint end.
+        __initialize_target_lf: comment transition at the faint end and power law fit to the faint end.
 
     3. halo_bgs.py:
         form in number_centals_mean is consistent with our model.

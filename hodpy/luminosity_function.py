@@ -248,20 +248,13 @@ class LuminosityFunctionTarget(LuminosityFunction):
     
     def __init__(self, filename, Phi_star, M_star, alpha, P, Q):
         self.lf_miniJPAS = LuminosityFunctionTabulated(filename, P, Q)
-        self.lf_gama = \
-               LuminosityFunctionSchechter(Phi_star, M_star, alpha, P, Q)
+        #self.lf_gama = \
+        #       LuminosityFunctionSchechter(Phi_star, M_star, alpha, P, Q)
         self._interpolator = \
                  self._LuminosityFunction__initialize_interpolator()
         self.P = P
         self.Q = Q
         
-    def transition(self, redshift):
-        """
-        Function which describes the transition between the miniJPAS LF
-        at low z and the GAMA LF at high z
-        """
-        return 1. / (1. + np.exp(120*(redshift-0.15)))
-
     def Phi(self, magnitude, redshift):
         """
         Luminosity function as a function of absoulte magnitude and redshift
@@ -271,7 +264,6 @@ class LuminosityFunctionTarget(LuminosityFunction):
         Returns:
             array of number densities [h^3/Mpc^3]
         """
-        #w = self.transition(redshift)
         
         lf_miniJPAS = self.lf_miniJPAS.Phi(magnitude, redshift)
         #lf_gama = self.lf_gama.Phi(magnitude, redshift)
@@ -289,12 +281,9 @@ class LuminosityFunctionTarget(LuminosityFunction):
         Returns:
             array of number densities [h^3/Mpc^3]
         """
-        #w = self.transition(redshift)
 
         lf_miniJPAS = self.lf_miniJPAS.Phi_cumulative(magnitude, redshift)
-        #lf_gama = self.lf_gama.Phi_cumulative(magnitude, redshift)
         
-        #return w*lf_miniJPAS + (1-w)*lf_gama
         return lf_miniJPAS
 
 

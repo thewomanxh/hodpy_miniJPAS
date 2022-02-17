@@ -46,6 +46,6 @@ kcorr_file = path+"/k_corr_rband_z01.dat"
 
 # miniJPAS luminosity functions
 miniJPAS_lf_tabulated = path+"/miniJPAS_cumulative_lf_0.4_log_interp.dat"
-#miniJPAS_lf_tabulated = path+"/sdss_cumulative_lf.dat"
-gama_lf_fits      = path+"/lf_params.dat"
+#miniJPAS_lf_tabulated = path+"/sdss_cumulative_lf.dat" the original one
+gama_lf_fits      = path+"/lf_params.dat" # describe the GAMA catelogue.
 target_lf         = path+"/target_lf.dat" # will be created if doesn't exist
