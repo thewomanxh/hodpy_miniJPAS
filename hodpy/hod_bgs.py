@@ -228,7 +228,7 @@ class HOD_BGS(HOD):
             arr_ones = np.ones(len(mags), dtype="f")
             for i in range(len(log_masses)):
                 for j in range(len(redshifts)):
-
+                    
                     x = np.sqrt(2) * (log_masses[i]-np.log10(self.Mmin(mags, arr_ones*redshifts[j]))) / self.sigma_logM(mags, arr_ones*redshifts[j])
 
                     if x[-1] < 3.5: continue
@@ -273,6 +273,7 @@ class HOD_BGS(HOD):
             print("Generating lookup table of satellite galaxy magnitudes")
 
             mags = np.arange(-25, -8, 0.01)
+            ## xiu's comment: faint galaxy from kcorrection should be amended later
             abs_mag_faint = self.kcorr.magnitude_faint(redshifts, self.mag_faint)
             arr_ones = np.ones(len(mags))
             for i in range(len(log_masses)):
@@ -455,7 +456,9 @@ class HOD_BGS(HOD):
         magnitude_z0 = self.lf.magnitude(n, np.ones(len(n))*0.4)
 
         # find sigma_logM
-        sigma = sigma_function(magnitude, self.sigma_A, self.sigma_B, self.sigma_C, self.sigma_D)
+        ## xiu's change: set the sigma to fixed value 1
+        #sigma = sigma_function(magnitude, self.sigma_A, self.sigma_B, self.sigma_C, self.sigma_D)
+        sigma = np.oneds(len(n))
 
         # sigma_logM is kept fixed with redshift
         return sigma
@@ -473,7 +476,10 @@ class HOD_BGS(HOD):
             array of mean number of central galaxies
         """
 
-        diff = log_mass-self.M0(magnitude, redshift, f)
+        ## xiu change: why minus M0?
+        #diff = log_mass-self.M0(magnitude, redshift, f)
+        diff = log_mass-self.Mmin(magnitude, redshift, f)
+
         central_n = np.int64(diff>0)
         central_n = np.int64(diff<0)
         #print(central_n);exit()
@@ -497,7 +503,10 @@ class HOD_BGS(HOD):
         """
         num_cent = self.number_centrals_mean(log_mass, magnitude, redshift, f)
 
-        num_sat = num_cent * ((10**log_mass - self.M0(magnitude, redshift, f))/\
+        ## xiu change:
+        #num_sat = num_cent * ((10**log_mass - self.M0(magnitude, redshift, f))/\
+            #self.M1(magnitude, redshift, f))**self.alpha(magnitude, redshift)
+        num_sat = num_cent * ((10**log_mass - self.Mmin(magnitude, redshift, f))/\
             self.M1(magnitude, redshift, f))**self.alpha(magnitude, redshift)
 
         num_sat[np.where(np.isnan(num_sat))[0]] = 0
@@ -727,7 +736,9 @@ class HOD_BGS_Simple(HOD):
         Returns:
             array of mean number of central galaxies
         """
-        diff = log_mass-self.M0(magnitude, redshift, f)
+        ## xiu change: why minus M0?
+        #diff = log_mass-self.M0(magnitude, redshift, f)
+        diff = log_mass-self.Mmin(magnitude, redshift, f)
         central_n = np.int64(diff>0)
         central_n = np.int64(diff<0)
         return central_n
@@ -751,9 +762,12 @@ class HOD_BGS_Simple(HOD):
         """
         num_cent = self.number_centrals_mean(log_mass, magnitude, redshift, f)
 
-        num_sat = num_cent * ((10**log_mass - self.M0(magnitude, redshift, f))/\
+        ## xiu change:
+        #num_sat = num_cent * ((10**log_mass - self.M0(magnitude, redshift, f))/\
+            #self.M1(magnitude, redshift, f))**self.alpha(magnitude, redshift)
+        num_sat = num_cent * ((10**log_mass - self.Mmin(magnitude, redshift, f))/\
             self.M1(magnitude, redshift, f))**self.alpha(magnitude, redshift)
-
+        
         num_sat[np.where(np.isnan(num_sat))[0]] = 0
 
         return num_sat
