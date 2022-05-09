@@ -30,7 +30,7 @@ def lum2mag(luminosity):
     
 class LuminosityFunction(object):
     """
-    Luminsity function base class
+    base Luminsity function
     """
     def __init__(self):
         pass
@@ -247,9 +247,10 @@ class LuminosityFunctionTarget(LuminosityFunction):
     """
     
     def __init__(self, filename, Phi_star, M_star, alpha, P, Q):
-        self.lf_miniJPAS = LuminosityFunctionTabulated(filename, P, Q)
-        #self.lf_gama = \
-        #       LuminosityFunctionSchechter(Phi_star, M_star, alpha, P, Q)
+        ## xiu's change: use schechter function, similar to GAMA
+        #self.lf_miniJPAS = LuminosityFunctionTabulated(filename, P, Q)
+        self.lf_miniJPAS = \
+               LuminosityFunctionSchechter(Phi_star, M_star, alpha, P, Q)
         self._interpolator = \
                  self._LuminosityFunction__initialize_interpolator()
         self.P = P
@@ -289,7 +290,7 @@ class LuminosityFunctionTarget(LuminosityFunction):
 
 class LuminosityFunctionTargetBGS(LuminosityFunctionTarget):
     """
-    Class used to calculate the target luminosity function at z=0.4,
+    used to calculate the target luminosity function at z=0.4,
     used to create the BGS mock catalogue. This is the result of integrating the
     halo mass function multiplied by the HOD. The resulting LF smoothly
     transitions to the Blanton miniJPAS LF at the faint end, then is
@@ -305,10 +306,13 @@ class LuminosityFunctionTargetBGS(LuminosityFunctionTarget):
         self.Phi_star, self.M_star, self.alpha, self.P, self.Q = \
                         np.loadtxt(lf_param_file, skiprows=3, delimiter=",")
         
-        try:
-            self.lf_miniJPAS = LuminosityFunctionTabulated(target_lf_file,self.P,self.Q)
-        except IOError:
-            self.lf_miniJPAS = self.__initialize_target_lf(target_lf_file, miniJPAS_lf_file, hod_bgs_simple)
+        ## xiu's change: the lf_miniJPAS is using the P, Q parameters as GAMA
+        #try:
+        #    self.lf_miniJPAS = LuminosityFunctionTabulated(target_lf_file,self.P,self.Q)
+        #except IOError:
+        #    self.lf_miniJPAS = self.__initialize_target_lf(target_lf_file, miniJPAS_lf_file, hod_bgs_simple)
+        self.lf_miniJPAS = LuminosityFunctionSchechter(self.Phi_star, self.M_star, self.alpha, self.P, self.Q)
+
         self.lf_gama = LuminosityFunctionSchechter(self.Phi_star, self.M_star,
                                                    self.alpha, self.P, self.Q)
         self._interpolator = \
@@ -342,7 +346,8 @@ class LuminosityFunctionTargetBGS(LuminosityFunctionTarget):
 
         tck = splrep(mag[::-1], np.log10(n)[::-1])
         ns = 10**splev(mags, tck)
-        
+       
+        ## xiu's comment: discard the transition at the faint end
         # transition to blanton at the faint end
         #lf_miniJPAS = LuminosityFunctionTabulated(miniJPAS_lf_file, self.P, self.Q)
         #ns_miniJPAS = lf_miniJPAS.Phi(mags, zs)
