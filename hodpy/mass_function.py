@@ -158,16 +158,24 @@ class MassFunctionPino(object):
         # apply correction to this
         sigma = sigma * (self.power_spectrum.delta_c(redshift)/self.power_spectrum.delta_c(0))**2
 
-        dc=1
-        A = self.A(redshift)
-        a = self.a(redshift)
-        p = self.p(redshift)
+        ## xiu's change: following I use Eq. 12 of Watson 2013 instead of Eq.4 of Jenkins 2000, and the parameters of equation fixed.
+        #dc=1
+        #A = self.A(redshift)
+        #a = self.a(redshift)
+        #p = self.p(redshift)
         
-        mf = A * np.sqrt(2*a/np.pi)
-        mf *= 1 + (sigma**2 / (a * dc**2))**p
-        mf *= dc / sigma
-        mf *= np.exp(-a * dc**2 / (2*sigma**2))
-
+        #mf = A * np.sqrt(2*a/np.pi)
+        #mf *= 1 + (sigma**2 / (a * dc**2))**p
+        #mf *= dc / sigma
+        #mf *= np.exp(-a * dc**2 / (2*sigma**2))
+        
+        A_watson = 0.282
+        alpha_watson = 2.163
+        beta_watson = 1.406
+        gamma_watson = 1.210
+        mf = (beta_watson/sigma)**alpha_watson+1
+        mf = A_watson*mf *np.exp(-gamma_watson/sigma**2)
+        
         return mf
 
     def number_density(self, log_mass, redshift):
