@@ -36,18 +36,24 @@ def M_function(log_mass, L_s, M_t, a_m):
 
 def sigma_function(magnitude, s_faint, s_bright, M_step, width):
     """
-    Smooth step function describing how HOD parameter sigma_logM varies 
+    Smooth step function describing how HOD parameter sigma_logM varies
     as a function of magnitude
 
     Args:
         magnitude: array of absolute magnitude
-        s_faint:   sigma_logM for faint samples    
+        s_faint:   sigma_logM for faint samples
         s_bright:  sigma_logM for bright samples
         M_step:    position of step
         width:     sets the width of step
     Returns:
         array of sigma_logM
     """
+    sigma = s_faint + (s_bright-s_faint) / (1.+np.exp((magnitude+M_step)*width))
+
+    # Add possibility of setting sigma to 0 (if s_faint=s_bright=0)
+    # In that case, set it to a small non-zero value (to avoid problems later)
+    sigma[sigma == 0] = 1e-6
+
     return s_faint + (s_bright-s_faint) / (1.+np.exp((magnitude+M_step)*width))
 
 
@@ -398,21 +404,26 @@ class HOD_BGS(HOD):
         Returns:
             array of M0
         """
-        # use target LF to convert magnitude to number density
-        n = self.lf.Phi_cumulative(magnitude, redshift)
-
-        # find magnitude at z0=0.4 which corresponds to the same number density
-        magnitude_z0 = self.lf.magnitude(n, np.ones(len(n))*0.4)
-        log_lum_z0 = np.log10(self.lf.mag2lum(magnitude_z0))
-
-        # find M0
-        M0 = 10**(self.M0_A*log_lum_z0 + self.M0_B)
-        
-        # use slide factor to evolve M0
-        if not f is None:
-            return M0 * f
+        # Add option for 'simplified' model with M0=Mmin.
+        # This can be defined in [hod_param_file] setting (M0_A, M0_B) = (0, 0)
+        if self.M0_A == 0 and self.M0_B == 0:
+            return self.Mmin(magnitude, redshift, f)
         else:
-            return M0 * self.slide_factor(magnitude, redshift)
+            # use target LF to convert magnitude to number density
+            n = self.lf.Phi_cumulative(magnitude, redshift)
+
+            # find magnitude at z0=0.4 which corresponds to the same number density
+            magnitude_z0 = self.lf.magnitude(n, np.ones(len(n))*0.4)
+            log_lum_z0 = np.log10(self.lf.mag2lum(magnitude_z0))
+
+            # find M0
+            M0 = 10**(self.M0_A*log_lum_z0 + self.M0_B)
+
+            # use slide factor to evolve M0
+            if not f is None:
+                return M0 * f
+            else:
+                return M0 * self.slide_factor(magnitude, redshift)
 
 
     def alpha(self, magnitude, redshift):
@@ -456,14 +467,12 @@ class HOD_BGS(HOD):
         magnitude_z0 = self.lf.magnitude(n, np.ones(len(n))*0.4)
 
         # find sigma_logM
-        ## xiu's change: set the sigma to fixed value 1
-        #sigma = sigma_function(magnitude, self.sigma_A, self.sigma_B, self.sigma_C, self.sigma_D)
-        sigma = np.oneds(len(n))
+        sigma = sigma_function(magnitude_z0, self.sigma_A, self.sigma_B, self.sigma_C, self.sigma_D)
 
         # sigma_logM is kept fixed with redshift
         return sigma
 
-    
+
     def number_centrals_mean(self, log_mass, magnitude, redshift, f=None):
         """
         Average number of central galaxies in each halo brighter than
@@ -476,18 +485,10 @@ class HOD_BGS(HOD):
             array of mean number of central galaxies
         """
 
-        ## xiu change: why minus M0?
-        #diff = log_mass-self.M0(magnitude, redshift, f)
-        diff = log_mass-self.Mmin(magnitude, redshift, f)
-
-        central_n = np.int64(diff>0)
-        central_n = np.int64(diff<0)
-        #print(central_n);exit()
-        return central_n
         # use pseudo gaussian spline kernel
-        #return spline.cumulative_spline_kernel(log_mass, 
-        #        mean=np.log10(self.Mmin(magnitude, redshift, f)), 
-        #        sig=self.sigma_logM(magnitude, redshift)/np.sqrt(2))
+        return spline.cumulative_spline_kernel(log_mass,
+                mean=np.log10(self.Mmin(magnitude, redshift, f)),
+                sig=self.sigma_logM(magnitude, redshift)/np.sqrt(2))
 
 
     def number_satellites_mean(self, log_mass, magnitude, redshift, f=None):
@@ -503,10 +504,7 @@ class HOD_BGS(HOD):
         """
         num_cent = self.number_centrals_mean(log_mass, magnitude, redshift, f)
 
-        ## xiu change:
-        #num_sat = num_cent * ((10**log_mass - self.M0(magnitude, redshift, f))/\
-            #self.M1(magnitude, redshift, f))**self.alpha(magnitude, redshift)
-        num_sat = num_cent * ((10**log_mass - self.Mmin(magnitude, redshift, f))/\
+        num_sat = num_cent * ((10**log_mass - self.M0(magnitude, redshift, f))/\
             self.M1(magnitude, redshift, f))**self.alpha(magnitude, redshift)
 
         num_sat[np.where(np.isnan(num_sat))[0]] = 0
@@ -545,7 +543,7 @@ class HOD_BGS(HOD):
         # mean number of satellites in each halo brighter than the
         # faint magnitude threshold
         number_mean = self.number_satellites_mean(log_mass, magnitude, redshift)
-        print(number_mean) 
+
         # draw random number from Poisson distribution
         return np.random.poisson(number_mean)
 
@@ -690,9 +688,14 @@ class HOD_BGS_Simple(HOD):
         Returns:
             array of M0
         """
-        log_lum_z0 = (4.76 - magnitude)/2.5
 
-        return 10**(self.M0_A*log_lum_z0 + self.M0_B) * f
+        # Add option for 'simplified' model with M0=Mmin.
+        # This can be defined in [hod_param_file] setting (M0_A, M0_B) = (0, 0)
+        if self.M0_A == 0 and self.M0_B == 0:
+            return self.Mmin(magnitude, redshift, f)
+        else:
+            log_lum_z0 = (4.76 - magnitude)/2.5
+            return 10**(self.M0_A*log_lum_z0 + self.M0_B) * f
 
 
     def alpha(self, magnitude, redshift):
@@ -736,17 +739,11 @@ class HOD_BGS_Simple(HOD):
         Returns:
             array of mean number of central galaxies
         """
-        ## xiu change: why minus M0?
-        #diff = log_mass-self.M0(magnitude, redshift, f)
-        diff = log_mass-self.Mmin(magnitude, redshift, f)
-        central_n = np.int64(diff>0)
-        central_n = np.int64(diff<0)
-        return central_n
 
         # use pseudo gaussian spline kernel
-        #return spline.cumulative_spline_kernel(log_mass, 
-        #        mean=np.log10(self.Mmin(magnitude, redshift, f)), 
-        #        sig=self.sigma_logM(magnitude, redshift)/np.sqrt(2))
+        return spline.cumulative_spline_kernel(log_mass,
+                mean=np.log10(self.Mmin(magnitude, redshift, f)),
+                sig=self.sigma_logM(magnitude, redshift)/np.sqrt(2))
 
 
     def number_satellites_mean(self, log_mass, magnitude, redshift, f=1.0):
@@ -762,12 +759,9 @@ class HOD_BGS_Simple(HOD):
         """
         num_cent = self.number_centrals_mean(log_mass, magnitude, redshift, f)
 
-        ## xiu change:
-        #num_sat = num_cent * ((10**log_mass - self.M0(magnitude, redshift, f))/\
-            #self.M1(magnitude, redshift, f))**self.alpha(magnitude, redshift)
-        num_sat = num_cent * ((10**log_mass - self.Mmin(magnitude, redshift, f))/\
+        num_sat = num_cent * ((10**log_mass - self.M0(magnitude, redshift, f))/\
             self.M1(magnitude, redshift, f))**self.alpha(magnitude, redshift)
-        
+
         num_sat[np.where(np.isnan(num_sat))[0]] = 0
 
         return num_sat
