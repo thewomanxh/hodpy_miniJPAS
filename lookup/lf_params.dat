@@ -1,4 +1,4 @@
-# Schechter fit to LF at high z
+# Schechter fit to i-band miniJPAS Luminosity Function, using z=0.4 as reference
 # P and Q are evolution parameters
 #Phi_star,  M_star,  alpha,   P,     Q
- 0.94e-2,   -20.70,  -1.23,   1.8,   0.7
+0.009,   -21.26,  -1.134,   0.73,   0.6
