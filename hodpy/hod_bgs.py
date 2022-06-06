@@ -148,26 +148,44 @@ class HOD_BGS(HOD):
         log_n_targ = np.log10(self.lf.Phi_cumulative(mag, z))
         log_n_hod = np.log10(self.get_n_HOD(mag, z, f))
         return log_n_targ - log_n_hod
-        
-            
+
+    def __slide_factor_calc(self, mag, z):
+        """
+        Function that calculates the evolution parameter ('slide factor')
+        for a single (magnitude, redshift) point.
+        Will be used below for initializing the interpolator.
+        """
+        f0 = 1.0 #initial guess
+        x = root(self.__root_function, f0,
+                 args=(mag, z))
+        # sometimes root finding fails with this initial guess
+        # make f0 smaller and try again
+        while x["x"][0]==f0 and f0>0:
+            f0 -= 0.1
+            print("Trying f0 = %.1f"%f0)
+            x = root(self.__root_function, f0,
+                     args=(mag, z))
+
+        return x["x"][0]
+
     def __initialize_slide_factor_interpolator(self, slide_file):
-        # creates a RegularGridInterpolator object used for finding 
+        # creates a RegularGridInterpolator object used for finding
         # the 'slide factor' as a function of mag and z
 
         magnitudes = np.arange(-24, -9.99, 0.1)
-        redshifts = np.arange(0, 0.81, 0.05)
-        
+        redshifts = np.arange(0, 1.01, 0.05)
+
         try:
             # try to read file
             factors = np.loadtxt(slide_file)
-            
+
         except:
             # file doesn't exist - calculate factors
             # Note: this is very slow!!
             # The nested loop could be sped up by running the root finding in parallel
 
             print("Calculating evolution parameters")
-            
+
             factors = np.zeros((len(magnitudes),len(redshifts)))
 
             # loop through magnitudes and redshifts. At each, find f required to get target LF
@@ -175,39 +193,29 @@ class HOD_BGS(HOD):
                 for j in range(len(magnitudes)):
                     print("z = %.2f, mag = %.2f"%(redshifts[i],magnitudes[j]))
 
-                    f0 = 1.0 #initial guess
-                    x = root(self.__root_function, f0,
-                             args=(magnitudes[j], redshifts[i]))
-                    # sometimes root finding fails with this initial guess
-                    # make f0 smaller and try again
-                    while x["x"][0]==f0 and f0>0:
-                        f0 -= 0.1
-                        print("Trying f0 = %.1f"%f0)
-                        x = root(self.__root_function, f0,
-                                 args=(magnitudes[j], redshifts[i]))
-                    
-                    factors[j,i] = x["x"][0]
-                    print("f = %.6f"%x["x"][0])
+                    factors[j, i] = self.__slide_factor_calc(magnitudes[j],
+                                                             redshifts[i])
+                    print("f = %.6f" % factors[j,i])
 
             np.savetxt(slide_file, factors)
-    
+
         return RegularGridInterpolator((magnitudes, redshifts), factors,
                                        bounds_error=False, fill_value=None)
 
-    
+
     def __initialize_mass_interpolator(self, L_s, M_t, a_m):
-        # creates a RegularGridInterpolator object used for finding 
+        # creates a RegularGridInterpolator object used for finding
         # the HOD parameters Mmin or M1 (at z=0.1) as a function of log_mass
-        
+
         log_mass = np.arange(10, 16, 0.001)[::-1]
-        
+
         magnitudes = M_function(log_mass, L_s, M_t, a_m)
 
         return RegularGridInterpolator((magnitudes,), log_mass,
                                        bounds_error=False, fill_value=None)
 
     def __initialize_central_interpolator(self, central_lookup_file, replace_central_lookup=False):
-        # creates a RegularGridInterpolator object used for finding 
+        # creates a RegularGridInterpolator object used for finding
         # the magnitude of central galaxies as a function of log_mass,
         # z, and random number x from spline kernel distribution
 
