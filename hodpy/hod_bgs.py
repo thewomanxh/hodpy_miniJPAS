@@ -18,14 +18,14 @@ from hodpy import lookup
 def M_function(log_mass, L_s, M_t, a_m):
     """
     Function describing how HOD parameters Mmin and M1 vary with magnitude.
-    This function returns magnitude as a function of mass, and has the same 
+    This function returns magnitude as a function of mass, and has the same
     functional form as Eq. 11 from Zehavi 2011.
 
     Args:
         log_mass: array of the log10 of halo mass (Msun/h)
         L_s:      median luminosity of central galaxies (Lsun/h^2)
         M_t:      transition halo mass (Msun/h)
-        a_m:      high-mass power law index     
+        a_m:      high-mass power law index
     Returns:
         array of absolute magnitude
     """
@@ -83,49 +83,49 @@ class HOD_BGS(HOD):
     """
 
     def __init__(self, mass_function=MassFunctionPino(), cosmology=CosmologyPino(), mag_faint=20.0,
-                 kcorr=GAMA_KCorrection(CosmologyPino()), hod_param_file=lookup.bgs_hod_parameters, 
-                 slide_file=lookup.bgs_hod_slide_factors, central_lookup_file=lookup.central_lookup_file, 
-                 satellite_lookup_file=lookup.satellite_lookup_file, target_lf_file=lookup.target_lf, 
+                 kcorr=GAMA_KCorrection(CosmologyPino()), hod_param_file=lookup.bgs_hod_parameters,
+                 slide_file=lookup.bgs_hod_slide_factors, central_lookup_file=lookup.central_lookup_file,
+                 satellite_lookup_file=lookup.satellite_lookup_file, target_lf_file=lookup.target_lf,
                  miniJPAS_lf_file=lookup.miniJPAS_lf_tabulated, lf_param_file=lookup.gama_lf_fits,
                  replace_central_lookup=False, replace_satellite_lookup=False):
-        
+
         self.Mmin_Ls, self.Mmin_Mt, self.Mmin_am, self.M1_Ls, self.M1_Mt, self.M1_am, \
             self.M0_A, self.M0_B, self.alpha_A, self.alpha_B, self.alpha_C, self.sigma_A, \
             self.sigma_B, self.sigma_C, self.sigma_D  = lookup.read_hod_param_file(hod_param_file)
-        
+
         self.mf = mass_function
         self.cosmo = cosmology
-        self.lf = LuminosityFunctionTargetBGS(target_lf_file, miniJPAS_lf_file, lf_param_file, 
+        self.lf = LuminosityFunctionTargetBGS(target_lf_file, miniJPAS_lf_file, lf_param_file,
                                               HOD_BGS_Simple(hod_param_file))
         self.kcorr = kcorr
         self.mag_faint = mag_faint
 
         self.__logMmin_interpolator = \
-            self.__initialize_mass_interpolator(self.Mmin_Ls, self.Mmin_Mt, 
+            self.__initialize_mass_interpolator(self.Mmin_Ls, self.Mmin_Mt,
                                                 self.Mmin_am)
         self.__logM1_interpolator = \
             self.__initialize_mass_interpolator(self.M1_Ls, self.M1_Mt, self.M1_am)
 
         self.__slide_interpolator = \
             self.__initialize_slide_factor_interpolator(slide_file)
-        
+
         self.__central_interpolator = \
             self.__initialize_central_interpolator(central_lookup_file, replace_central_lookup)
-        
+
         self.__satellite_interpolator = \
             self.__initialize_satellite_interpolator(satellite_lookup_file, replace_satellite_lookup)
 
     def __integration_function(self, logM, mag, z, f):
         # function to integrate (number density of haloes * number of galaxies from HOD)
-                
+
         # mean number of galaxies per halo
         N_gal = self.number_galaxies_mean(np.array([logM,]),mag,z,f)[0]
         # number density of haloes
         n_halo = self.mf.number_density(np.array([logM,]), z)
-                
+
         return (N_gal * n_halo)[0]
- 
-                
+
+
     def get_n_HOD(self, magnitude, redshift, f):
         """
         Returns the number density of galaxies predicted by the HOD. This is evaluated from
@@ -228,7 +228,7 @@ class HOD_BGS(HOD):
 
         try:
             if replace_central_lookup: raise IOError
-                
+
             # try to read 3d array of magnitudes from file
             magnitudes = np.load(central_lookup_file)
 
@@ -242,7 +242,7 @@ class HOD_BGS(HOD):
             arr_ones = np.ones(len(mags), dtype="f")
             for i in range(len(log_masses)):
                 for j in range(len(redshifts)):
-                    
+
                     x = np.sqrt(2) * (log_masses[i]-np.log10(self.Mmin(mags, arr_ones*redshifts[j]))) / self.sigma_logM(mags, arr_ones*redshifts[j])
 
                     if x[-1] < 3.5: continue
@@ -250,19 +250,19 @@ class HOD_BGS(HOD):
                     # find this in the array xs
                     idx = np.searchsorted(x, xs)
 
-                    # interpolate 
+                    # interpolate
                     f = (xs - x[idx-1]) / (x[idx] - x[idx-1])
                     magnitudes[i,j,:] = mags[idx-1] + f*(mags[idx]-mags[idx-1])
             print("Saving lookup table to file")
             np.save(central_lookup_file, magnitudes)
-            
+
         # create RegularGridInterpolator object
         return RegularGridInterpolator((log_masses, redshifts, xs),
                               magnitudes, bounds_error=False, fill_value=None)
-    
+
 
     def __initialize_satellite_interpolator(self, satellite_lookup_file, replace_satellite_file=False):
-        # creates a RegularGridInterpolator object used for finding 
+        # creates a RegularGridInterpolator object used for finding
         # the magnitude of satellite galaxies as a function of log_mass,
         # z, and random number log_x (x is uniform random between 0 and 1)
 
@@ -275,13 +275,13 @@ class HOD_BGS(HOD):
 
         try:
             if replace_satellite_file: raise IOError
-            
+
             # try to read 3d array of magnitudes from file
             magnitudes = np.load(satellite_lookup_file)
 
             if magnitudes.shape!=(len(log_masses), len(redshifts), len(log_xs)):
                 raise ValueError("Satellite lookup table has unexpected shape")
-            
+
         except IOError:
             # file doesn't exist - fill in array of magnitudes
             print("Generating lookup table of satellite galaxy magnitudes")
@@ -304,12 +304,12 @@ class HOD_BGS(HOD):
                     # find this in the array log_xs
                     idx = np.searchsorted(log_x, log_xs)
 
-                    # interpolate 
+                    # interpolate
                     f = (log_xs - log_x[idx-1]) / (log_x[idx] - log_x[idx-1])
                     magnitudes[i,j,:] = mags[idx-1] + f*(mags[idx]-mags[idx-1])
 
                     # Deal with NaN values
-                    # if NaN for small x but not large x, replace all 
+                    # if NaN for small x but not large x, replace all
                     # NaN values with faintest mag
                     idx = np.isnan(magnitudes[i,j,:])
                     num_nan = np.count_nonzero(idx)
@@ -353,7 +353,7 @@ class HOD_BGS(HOD):
     def Mmin(self, magnitude, redshift, f=None):
         """
         HOD parameter Mmin, which is the mass at which a halo has a 50%
-        change of containing a central galaxy brighter than the magnitude 
+        change of containing a central galaxy brighter than the magnitude
         threshold
         Args:
             magnitude: array of absolute magnitude threshold
@@ -453,14 +453,14 @@ class HOD_BGS(HOD):
 
         # find alpha
         a = np.log10(self.alpha_C + (self.alpha_A*log_lum_z0)**self.alpha_B)
-        
+
         # alpha is kept fixed with redshift
         return a
 
 
     def sigma_logM(self, magnitude, redshift):
         """
-        HOD parameter sigma_logM, which sets the amount of scatter in 
+        HOD parameter sigma_logM, which sets the amount of scatter in
         the luminosity of central galaxies
         Args:
             magnitude: array of absolute magnitude threshold
@@ -571,7 +571,7 @@ class HOD_BGS(HOD):
         # return corresponding central magnitudes
         points = np.array(list(zip(log_mass, redshift, x)))
         return self.__central_interpolator(points)
-    
+
 
     def get_magnitude_satellites(self, log_mass, number_satellites, redshift):
         """
@@ -596,12 +596,12 @@ class HOD_BGS(HOD):
         log_x = np.log10(np.random.rand(len(log_mass_satellite)))
 
         # find corresponding satellite magnitudes
-        points = np.array(list(zip(log_mass_satellite, redshift_satellite, 
+        points = np.array(list(zip(log_mass_satellite, redshift_satellite,
                                    log_x)))
         return halo_index, self.__satellite_interpolator(points)
 
 
-    
+
 class HOD_BGS_Simple(HOD):
     """
     Simplified version of the class HOD_BGS.
@@ -609,31 +609,31 @@ class HOD_BGS_Simple(HOD):
     """
 
     def __init__(self, hod_param_file):
-        
+
         self.Mmin_Ls, self.Mmin_Mt, self.Mmin_am, self.M1_Ls, self.M1_Mt, self.M1_am, \
             self.M0_A, self.M0_B, self.alpha_A, self.alpha_B, self.alpha_C, self.sigma_A, \
             self.sigma_B, self.sigma_C, self.sigma_D  = lookup.read_hod_param_file(hod_param_file)
-        
+
         self.mf = MassFunctionPino()
 
         self.__logMmin_interpolator = \
-            self.__initialize_mass_interpolator(self.Mmin_Ls, self.Mmin_Mt, 
+            self.__initialize_mass_interpolator(self.Mmin_Ls, self.Mmin_Mt,
                                                self.Mmin_am)
         self.__logM1_interpolator = \
             self.__initialize_mass_interpolator(self.M1_Ls, self.M1_Mt, self.M1_am)
-        
-        
+
+
     def __integration_function(self, logM, mag, z, f):
         # function to integrate (number density of haloes * number of galaxies from HOD)
-                
+
         # mean number of galaxies per halo
         N_gal = self.number_galaxies_mean(np.array([logM,]),mag,z,f)[0]
         # number density of haloes
         n_halo = self.mf.number_density(np.array([logM,]), z)
-                
+
         return (N_gal * n_halo)[0]
- 
-                
+
+
     def get_n_HOD(self, magnitude, redshift, f):
         """
         Returns the number density of galaxies predicted by the HOD. This is evaluated from
@@ -648,11 +648,11 @@ class HOD_BGS_Simple(HOD):
         """
         return quad(self.__integration_function, 10, 16, args=(magnitude, redshift, f))[0]
 
-    
+
     def __initialize_mass_interpolator(self, L_s, M_t, a_m):
-        # creates a RegularGridInterpolator object used for finding 
+        # creates a RegularGridInterpolator object used for finding
         # the HOD parameters Mmin or M1 (at z=0.1) as a function of log_mass
-        
+
         log_mass = np.arange(10, 16, 0.001)[::-1]
         magnitudes = M_function(log_mass, L_s, M_t, a_m)
         return RegularGridInterpolator((magnitudes,), log_mass,
@@ -662,7 +662,7 @@ class HOD_BGS_Simple(HOD):
     def Mmin(self, magnitude, redshift, f=1.0):
         """
         HOD parameter Mmin, which is the mass at which a halo has a 50%
-        change of containing a central galaxy brighter than the magnitude 
+        change of containing a central galaxy brighter than the magnitude
         threshold
         Args:
             magnitude: array of absolute magnitude threshold
@@ -723,7 +723,7 @@ class HOD_BGS_Simple(HOD):
 
     def sigma_logM(self, magnitude, redshift):
         """
-        HOD parameter sigma_logM, which sets the amount of scatter in 
+        HOD parameter sigma_logM, which sets the amount of scatter in
         the luminosity of central galaxies
         Args:
             magnitude: array of absolute magnitude threshold
@@ -735,7 +735,7 @@ class HOD_BGS_Simple(HOD):
 
         return sigma
 
-    
+
     def number_centrals_mean(self, log_mass, magnitude, redshift, f=1.0):
         """
         Average number of central galaxies in each halo brighter than
@@ -788,6 +788,3 @@ class HOD_BGS_Simple(HOD):
         """
         return self.number_centrals_mean(log_mass, magnitude, redshift, f) + \
             self.number_satellites_mean(log_mass, magnitude, redshift, f)
-
-
-
