@@ -4,7 +4,6 @@ import numpy as np
 from scipy.interpolate import RegularGridInterpolator
 from scipy.integrate import quad
 from scipy.optimize import minimize, root
-from multiprocessing import Pool
 
 from hodpy import luminosity_function
 from hodpy.luminosity_function import LuminosityFunctionTargetBGS
@@ -191,10 +190,13 @@ class HOD_BGS(HOD):
 
             # loop through magnitudes and redshifts. At each, find f required to get target LF
             for i in range(len(redshifts)):
-                print("z = %.2f" % redshifts[i])
-                with Pool() as p:
-                    factors[:, i] = p.map(lambda x: self.__slide_factor_calc(x, reshists[i]),
-                                          magnitudes)
+                for j in range(len(magnitudes)):
+                    print("z = %.2f, mag = %.2f"%(redshifts[i],magnitudes[j]))
+
+                    factors[j, i] = self.__slide_factor_calc(magnitudes[j],
+                                                             redshifts[i])
+                    print("f = %.6f" % factors[j,i])
+
             np.savetxt(slide_file, factors)
 
         return RegularGridInterpolator((magnitudes, redshifts), factors,
