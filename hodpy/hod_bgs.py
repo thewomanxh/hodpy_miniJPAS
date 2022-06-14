@@ -9,7 +9,7 @@ from hodpy import luminosity_function
 from hodpy.luminosity_function import LuminosityFunctionTargetBGS
 from hodpy.mass_function import MassFunctionPino
 from hodpy.cosmology import CosmologyPino
-from hodpy.k_correction import GAMA_KCorrection
+from hodpy.k_correction import JPAS_KCorrection
 from hodpy import spline
 from hodpy.hod import HOD
 from hodpy import lookup
@@ -66,7 +66,7 @@ class HOD_BGS(HOD):
         [mass_function]: hodpy.MassFunction object, the mass functino of the simulation (default is MassFunctionPino)
         [cosmology]:     hodpy.Cosmology object, the cosmology of the simulation (default is CosmologyPino)
         [mag_faint]:     faint apparent magnitude limit (default is 20.0)
-        [kcorr]:         hodpy.KCorrection object, the k-correction (default is GAMA_KCorrection)
+        [kcorr]:         hodpy.KCorrection object, the k-correction (default is JPAS_KCorrection)
         [hod_param_file]: location of file which contains HOD parameters
         [slide_file]:    location of file which contains 'slide' factors for evolving HODs. Will be created
                          automatically if the file doesn't already exist
@@ -83,7 +83,7 @@ class HOD_BGS(HOD):
     """
 
     def __init__(self, mass_function=MassFunctionPino(), cosmology=CosmologyPino(), mag_faint=20.0,
-                 kcorr=GAMA_KCorrection(CosmologyPino()), hod_param_file=lookup.bgs_hod_parameters,
+                 kcorr=JPAS_KCorrection(CosmologyPino()), hod_param_file=lookup.bgs_hod_parameters,
                  slide_file=lookup.bgs_hod_slide_factors, central_lookup_file=lookup.central_lookup_file,
                  satellite_lookup_file=lookup.satellite_lookup_file, target_lf_file=lookup.target_lf,
                  miniJPAS_lf_file=lookup.miniJPAS_lf_tabulated, lf_param_file=lookup.gama_lf_fits,
@@ -655,6 +655,7 @@ class HOD_BGS_Simple(HOD):
 
         log_mass = np.arange(10, 16, 0.001)[::-1]
         magnitudes = M_function(log_mass, L_s, M_t, a_m)
+        print(L_s, M_t, a_m, magnitudes)
         return RegularGridInterpolator((magnitudes,), log_mass,
                                        bounds_error=False, fill_value=None)
 

@@ -7,7 +7,7 @@ from hodpy.galaxy_catalogue import BGSGalaxyCatalogue
 from hodpy.cosmology import CosmologyPino
 from hodpy.mass_function import MassFunctionPino
 from hodpy.hod_bgs import HOD_BGS
-from hodpy.k_correction import GAMA_KCorrection
+from hodpy.k_correction import JPAS_KCorrection
 from hodpy.colour import Colour
 from hodpy import lookup
 
@@ -35,7 +35,7 @@ def main(input_file, output_file, mag_faint):
     gal_cat.add_colours(col)
 
     # use colour-dependent k-correction to get apparent magnitude
-    kcorr = GAMA_KCorrection(CosmologyPino())
+    kcorr = JPAS_KCorrection(CosmologyPino())
     gal_cat.add_apparent_magnitude(kcorr)
 
     # cut to galaxies brighter than apparent magnitude threshold

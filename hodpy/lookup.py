@@ -33,7 +33,7 @@ Pino_mass_function = path+"/mf_fits.dat"
 Pino_snapshots     = path+"/Pino_snapshots.dat"
 
 # HOD parameters for BGS mock
-bgs_hod_parameters    = path+"/hod_params_miniJPAS.dat"
+bgs_hod_parameters    = path+"/hod_params_pablo.dat"
 bgs_hod_slide_factors = path+"/slide_factors.dat" # will be created if doesn't exist
 
 # lookup files for central/satellite magnitudes
@@ -41,7 +41,8 @@ central_lookup_file   = path+"/central_magnitudes.npy"   # will be created if do
 satellite_lookup_file = path+"/satellite_magnitudes.npy" # will be created if doesn't exist
 
 # k-corrections
-kcorr_file = path+"/k_corr_rband_z01.dat"
+kcorr_file = path+"/k_corr_iband_z04.dat"
+#kcorr_file = path+"/k_corr_rband_z01.dat"
 
 # miniJPAS luminosity functions
 miniJPAS_lf_tabulated = path+"/miniJPAS_cumulative_lf_0.4_log_interp.dat"

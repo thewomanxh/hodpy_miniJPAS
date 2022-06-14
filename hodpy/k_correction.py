@@ -21,10 +21,10 @@ class KCorrection(object):
 
 
 
-class GAMA_KCorrection(KCorrection):
+class JPAS_KCorrection(KCorrection):
     """
-    Colour-dependent polynomial fit to the GAMA K-correction 
-    (Fig. 13 of Smith+17), used to convert between SDSS r-band
+    Colour-dependent polynomial fit to the K-correction, 
+    used to convert between JPAS i-band
     Petrosian apparent magnitudes, and rest frame absolute manigutues 
     at z_ref = 0.4
     
@@ -89,7 +89,9 @@ class GAMA_KCorrection(KCorrection):
         X = np.zeros(7)
         Y = np.zeros(7)
         # find X, Y at each colour
-        redshift = np.array([0.4,0.5])
+        ## xiu's change: use redshift range [0.2, 0.6].
+        redshift = np.array([0.2, 0.6])
+        #redshift = np.array([0.4,0.5])
         arr_ones = np.ones(len(redshift))
         for i in range(7):
             k = self.k(redshift, arr_ones*self.colour_med[i])
@@ -163,7 +165,8 @@ class GAMA_KCorrection(KCorrection):
             array of K-corrections
         """
         K = np.zeros(len(redshift))
-        idx = redshift <= 0.5
+        ## xiu's change: JPAS redshift reaches to 1.5
+        idx = redshift <= 1.5
 
         if self.cubic:
             K[idx] = self.__A_spline(colour[idx])*(redshift[idx]-self.z0)**4 + \
@@ -175,10 +178,10 @@ class GAMA_KCorrection(KCorrection):
                      self.__B(colour[idx])*(redshift[idx]-self.z0)**3 + \
                      self.__C(colour[idx])*(redshift[idx]-self.z0)**2 + \
                      self.__D(colour[idx])*(redshift[idx]-self.z0) + self.__E
-
-        idx = redshift > 0.5
+        ## xiu's comment: our __E is not at a certain value for different colour bins.
+        #idx = redshift > 0.5
         
-        K[idx] = self.__X(colour[idx])*redshift[idx] + self.__Y(colour[idx])
+        #K[idx] = self.__X(colour[idx])*redshift[idx] + self.__Y(colour[idx])
         
         return K
         
