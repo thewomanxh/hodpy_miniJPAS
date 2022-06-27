@@ -655,7 +655,6 @@ class HOD_BGS_Simple(HOD):
 
         log_mass = np.arange(10, 16, 0.001)[::-1]
         magnitudes = M_function(log_mass, L_s, M_t, a_m)
-        print(L_s, M_t, a_m, magnitudes)
         return RegularGridInterpolator((magnitudes,), log_mass,
                                        bounds_error=False, fill_value=None)
 

@@ -1,12 +1,14 @@
 #! /usr/bin/env python
 import numpy as np
 from scipy.special import erfc
+from hodpy import lookup
 
 # chm, La Laguna, June 2022
 # Here I modify the script version from Xiu-hui, where I include my fits to <M_g-M_r> vs (M_i,z) and RMS[M_g-M_r] vs (M_i,z)
 #
 from scipy.interpolate import interp1d
-filein='../lookup/rawdata_gmr_vs_Mr_from_miniJPAS.npz'
+#filein='/home/axiu/workspace/HOD_JPAS/hodpy_miniJPAS/lookup/rawdata_gmr_vs_Mr_from_miniJPAS.npz'
+filein = lookup.colour_file
 ddin=np.load(filein,allow_pickle=True) #np.savez_compressed('rawdata_gmr_vs_Mr_from_miniJPAS.npz',MrB=MrB,zbin=zbin,gmrAV=gmrAV,gmrRMS=gmrRMS)
 #
 def interpol_generic(lab,jcol,magnitude,redshift):
