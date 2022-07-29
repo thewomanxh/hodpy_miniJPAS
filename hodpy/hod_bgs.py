@@ -58,16 +58,6 @@ def sigma_function(magnitude, s_faint, s_bright, M_step, width):
     return sigma
 
 
-def slide_factor_calc(hod, mag, z):
-    """
-    Function that calculates the evolution parameter ('slide factor')
-    for a single (magnitude, redshift) point.
-    Will be used below for initializing the interpolator.
-    Must be defined *outside a class* if we want to send it to Pool.map()
-    """
-    return hod.__slide_factor_calc(mag, z)
-
-
 class HOD_BGS(HOD):
     """
     HOD class containing the HODs used to create the mock catalogue described in Smith et al. 2017
@@ -201,8 +191,6 @@ class HOD_BGS(HOD):
             # loop through magnitudes and redshifts. At each, find f required to get target LF
             for i in range(len(redshifts)):
                 print("z = %.2f" % redshifts[i])
-                def thisz_factors(mag):
-                    return slide_factor_calc(self, mag, redshifts[i])
                 with ProcessPool() as p:
                     factors[:, i] = p.map(lambda x: self.__slide_factor_calc(x, redshifts[i]), magnitudes)
             np.savetxt(slide_file, factors)
