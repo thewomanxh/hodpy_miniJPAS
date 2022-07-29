@@ -54,7 +54,7 @@ def sigma_function(magnitude, s_faint, s_bright, M_step, width):
     # In that case, set it to a small non-zero value (to avoid problems later)
     sigma[sigma == 0] = 1e-6
 
-    return s_faint + (s_bright-s_faint) / (1.+np.exp((magnitude+M_step)*width))
+    return sigma
 
 
 
