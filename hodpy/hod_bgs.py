@@ -182,8 +182,8 @@ class HOD_BGS(HOD):
         # creates a RegularGridInterpolator object used for finding
         # the 'slide factor' as a function of mag and z
 
-        magnitudes = np.arange(-24, -9.99, 0.1)
-        redshifts = np.arange(0, 1.01, 0.05)
+        magnitudes = np.arange(-24, -9.99, 0.2)
+        redshifts = np.arange(0, 1.01, 0.1)
 
         try:
             # try to read file
