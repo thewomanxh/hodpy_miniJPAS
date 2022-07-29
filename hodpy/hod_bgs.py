@@ -4,6 +4,7 @@ import numpy as np
 from scipy.interpolate import RegularGridInterpolator
 from scipy.integrate import quad
 from scipy.optimize import minimize, root
+from pathos.pools import ProcessPool
 
 from hodpy import luminosity_function
 from hodpy.luminosity_function import LuminosityFunctionTargetBGS
@@ -56,6 +57,15 @@ def sigma_function(magnitude, s_faint, s_bright, M_step, width):
 
     return sigma
 
+
+def slide_factor_calc(hod, mag, z):
+    """
+    Function that calculates the evolution parameter ('slide factor')
+    for a single (magnitude, redshift) point.
+    Will be used below for initializing the interpolator.
+    Must be defined *outside a class* if we want to send it to Pool.map()
+    """
+    return hod.__slide_factor_calc(mag, z)
 
 
 class HOD_BGS(HOD):
@@ -162,7 +172,7 @@ class HOD_BGS(HOD):
         # make f0 smaller and try again
         while x["x"][0]==f0 and f0>0:
             f0 -= 0.1
-            print("Trying f0 = %.1f"%f0)
+            # print("Trying f0 = %.1f"%f0)
             x = root(self.__root_function, f0,
                      args=(mag, z))
 
@@ -190,13 +200,11 @@ class HOD_BGS(HOD):
 
             # loop through magnitudes and redshifts. At each, find f required to get target LF
             for i in range(len(redshifts)):
-                for j in range(len(magnitudes)):
-                    print("z = %.2f, mag = %.2f"%(redshifts[i],magnitudes[j]))
-
-                    factors[j, i] = self.__slide_factor_calc(magnitudes[j],
-                                                             redshifts[i])
-                    print("f = %.6f" % factors[j,i])
-
+                print("z = %.2f" % redshifts[i])
+                def thisz_factors(mag):
+                    return slide_factor_calc(self, mag, redshifts[i])
+                with ProcessPool() as p:
+                    factors[:, i] = p.map(lambda x: self.__slide_factor_calc(x, redshifts[i]), magnitudes)
             np.savetxt(slide_file, factors)
 
         return RegularGridInterpolator((magnitudes, redshifts), factors,
