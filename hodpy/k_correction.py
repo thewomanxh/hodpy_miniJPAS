@@ -52,13 +52,14 @@ class JPAS_KCorrection(KCorrection):
             self.__B_interpolator = self.__initialize_parameter_interpolator_spline(B,cmed)
             self.__C_interpolator = self.__initialize_parameter_interpolator_spline(C,cmed)
             self.__D_interpolator = self.__initialize_parameter_interpolator_spline(D,cmed)
+            self.__E_interpolator = self.__initialize_parameter_interpolator_spline(E,cmed)
         else:
             # linear interpolation
             self.__A_interpolator = self.__initialize_parameter_interpolator(A,cmed)
             self.__B_interpolator = self.__initialize_parameter_interpolator(B,cmed)
             self.__C_interpolator = self.__initialize_parameter_interpolator(C,cmed)
             self.__D_interpolator = self.__initialize_parameter_interpolator(D,cmed)
-        self.__E = E[0]
+            self.__E_interpolator = self.__initialize_parameter_interpolator(E,cmed)
 
         self.colour_min = np.min(cmed)
         self.colour_max = np.max(cmed)
@@ -124,6 +125,11 @@ class JPAS_KCorrection(KCorrection):
         # coefficient of the z**1 term
         colour_clipped = np.clip(colour, self.colour_min, self.colour_max)
         return self.__D_interpolator(colour_clipped)
+        
+    def __E(self, colour):
+        # coefficient of the z**0 term (i.e. independent term)
+        colour_clipped = np.clip(colour, self.colour_min, self.colour_max)
+        return self.__E_interpolator(colour_clipped)
     
     def __A_spline(self, colour):
         # coefficient of the z**4 term
@@ -144,6 +150,11 @@ class JPAS_KCorrection(KCorrection):
         # coefficient of the z**1 term
         colour_clipped = np.clip(colour, self.colour_min, self.colour_max)
         return splev(colour_clipped, self.__D_interpolator)
+
+    def __E_spline(self, colour):
+        # coefficient of the z**0 term (i.e. independent term)
+        colour_clipped = np.clip(colour, self.colour_min, self.colour_max)
+        return splev(colour_clipped, self.__E_interpolator)
 
     def __X(self, colour):
         colour_clipped = np.clip(colour, self.colour_min, self.colour_max)
@@ -173,13 +184,15 @@ class JPAS_KCorrection(KCorrection):
             K[idx] = self.__A_spline(colour[idx])*(redshift[idx]-self.z0)**4 + \
                      self.__B_spline(colour[idx])*(redshift[idx]-self.z0)**3 + \
                      self.__C_spline(colour[idx])*(redshift[idx]-self.z0)**2 + \
-                     self.__D_spline(colour[idx])*(redshift[idx]-self.z0) + self.__E
+                     self.__D_spline(colour[idx])*(redshift[idx]-self.z0) + \
+                     self.__E_spline(colour[idx])
         else:
             K[idx] = self.__A(colour[idx])*(redshift[idx]-self.z0)**4 + \
                      self.__B(colour[idx])*(redshift[idx]-self.z0)**3 + \
                      self.__C(colour[idx])*(redshift[idx]-self.z0)**2 + \
-                     self.__D(colour[idx])*(redshift[idx]-self.z0) + self.__E
-        ## xiu's comment: our __E is not at a certain value for different colour bins.
+                     self.__D(colour[idx])*(redshift[idx]-self.z0) + \
+                     self.__E(colour[idx])
+                     
         #idx = redshift > 0.5
         
         #K[idx] = self.__X(colour[idx])*redshift[idx] + self.__Y(colour[idx])
