@@ -138,7 +138,7 @@ class HOD_BGS(HOD):
         Returns:
             number density
         """
-        return quad(self.__integration_function, 10, 16, args=(magnitude, redshift, f))[0]
+        return quad(self.__integration_function, 11, 18, args=(magnitude, redshift, f))[0]
 
 
     def __root_function(self, f, mag, z):
@@ -207,7 +207,7 @@ class HOD_BGS(HOD):
         # creates a RegularGridInterpolator object used for finding
         # the HOD parameters Mmin or M1 (at z=0.1) as a function of log_mass
 
-        log_mass = np.arange(10, 16, 0.001)[::-1]
+        log_mass = np.arange(11, 18, 0.001)[::-1]
 
         magnitudes = M_function(log_mass, L_s, M_t, a_m)
 
@@ -221,7 +221,7 @@ class HOD_BGS(HOD):
 
         # arrays of mass, x, redshift, and 3d array of magnitudes
         # x is the scatter in the central luminosity from the mean
-        log_masses = np.arange(10, 16, 0.02)
+        log_masses = np.arange(11, 18, 0.02)
         redshifts = np.arange(0, 1, 0.02)
         xs = np.arange(-3.5, 3.501, 0.02)
         magnitudes = np.zeros((len(log_masses), len(redshifts), len(xs)))
@@ -268,7 +268,7 @@ class HOD_BGS(HOD):
 
         # arrays of mass, x, redshift, and 3d array of magnitudes
         # x is the ratio of Nsat(mag,mass)/Nsat(mag_faint,mass)
-        log_masses = np.arange(10, 16, 0.02)
+        log_masses = np.arange(11, 18, 0.02)
         redshifts = np.arange(0, 1, 0.02)
         log_xs = np.arange(-12, 0.01, 0.05)
         magnitudes = np.zeros((len(log_masses), len(redshifts), len(log_xs)))
@@ -646,14 +646,14 @@ class HOD_BGS_Simple(HOD):
         Returns:
             number density
         """
-        return quad(self.__integration_function, 10, 16, args=(magnitude, redshift, f))[0]
+        return quad(self.__integration_function, 11, 18, args=(magnitude, redshift, f))[0]
 
 
     def __initialize_mass_interpolator(self, L_s, M_t, a_m):
         # creates a RegularGridInterpolator object used for finding
         # the HOD parameters Mmin or M1 (at z=0.1) as a function of log_mass
 
-        log_mass = np.arange(10, 16, 0.001)[::-1]
+        log_mass = np.arange(11, 18, 0.001)[::-1]
         magnitudes = M_function(log_mass, L_s, M_t, a_m)
         return RegularGridInterpolator((magnitudes,), log_mass,
                                        bounds_error=False, fill_value=None)
