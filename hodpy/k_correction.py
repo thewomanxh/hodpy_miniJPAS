@@ -41,7 +41,8 @@ class JPAS_KCorrection(KCorrection):
         cmin, cmax, A, B, C, D, E, cmed = \
             np.loadtxt(k_corr_file, unpack=True)
     
-        self.z0 = 0.4 # reference redshift
+        self.Nc = len(cmin) # Number of colour bins
+        self.z0 = z0 # reference redshift
         self.cubic = cubic_interpolation
 
         # Polynomial fit parameters
@@ -86,14 +87,14 @@ class JPAS_KCorrection(KCorrection):
     
     def __initialize_line_interpolators(self):
         # linear coefficients for z>0.5
-        X = np.zeros(7)
-        Y = np.zeros(7)
+        X = np.zeros(self.Nc)
+        Y = np.zeros(self.Nc)
         # find X, Y at each colour
         ## xiu's change: use redshift range [0.2, 0.6].
         redshift = np.array([0.2, 0.6])
         #redshift = np.array([0.4,0.5])
         arr_ones = np.ones(len(redshift))
-        for i in range(7):
+        for i in range(self.Nc):
             k = self.k(redshift, arr_ones*self.colour_med[i])
             X[i] = (k[1]-k[0]) / (redshift[1]-redshift[0])
             Y[i] = k[0] - X[i]*redshift[0]
