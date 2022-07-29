@@ -33,7 +33,7 @@ Pino_mass_function = path+"/mf_fits.dat"
 Pino_snapshots     = path+"/Pino_snapshots.dat"
 
 # HOD parameters for BGS mock
-bgs_hod_parameters    = path+"/hod_params_pablo.dat"
+bgs_hod_parameters    = path+"/hod_params_miniJPAS.dat"
 bgs_hod_slide_factors = path+"/slide_factors.dat" # will be created if doesn't exist
 
 # lookup files for central/satellite magnitudes
