@@ -22,8 +22,8 @@ class Colour(object):
         Returns:
             array of g-r colours
         """
-
-		colour = 0.62 - 0.04*(magnitude + 21) - 0.06*(redshift - 0.4)
+        
+        colour = 0.62 - 0.04*(magnitude + 21) - 0.06*(redshift - 0.4)
         return colour
 
 
@@ -39,7 +39,7 @@ class Colour(object):
         Returns:
             array of g-r colours
         """
-		colour = 0.086 + 0.001*(magnitude + 21) + 0.033*(redshift - 0.4)
+        colour = 0.086 + 0.001*(magnitude + 21) + 0.033*(redshift - 0.4)
         return colour
 
 
@@ -55,8 +55,7 @@ class Colour(object):
         Returns:
             array of g-r colours
         """
-
-		colour = 0.57 - 0.09*(magnitude + 21) - 0.21*(redshift - 0.4)
+        colour = 0.57 - 0.09*(magnitude + 21) - 0.21*(redshift - 0.4)
         return colour
 
 
@@ -73,9 +72,7 @@ class Colour(object):
         Returns:
             array of g-r colours
         """
-
-		colour = 0.160 - 0.022*(magnitude + 21) - 0.080*(redshift - 0.4)
-
+        colour = 0.160 - 0.022*(magnitude + 21) - 0.080*(redshift - 0.4)
         return colour
 
 
@@ -94,9 +91,7 @@ class Colour(object):
         Returns:
             array of g-r colours
         """
-
-		colour = 0.62 - 0.04*(magnitude + 21) - 0.06*(redshift - 0.4)
-
+        colour = 0.62 - 0.04*(magnitude + 21) - 0.06*(redshift - 0.4)
         return colour
 
 
@@ -112,9 +107,7 @@ class Colour(object):
         Returns:
             array of fraction of blue galaxies
         """
-
-		frac_blue = 0.75 + 0.28*(magnitude + 21) + 1.32*(redshift - 0.4) - 1.91*((redshift - 0.4)**2)
-
+        frac_blue = 0.75 + 0.28*(magnitude + 21) + 1.32*(redshift - 0.4) - 1.91*((redshift - 0.4)**2)
         return np.clip(frac_blue, 0, 1)
 
 
