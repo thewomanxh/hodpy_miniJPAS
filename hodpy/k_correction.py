@@ -24,9 +24,8 @@ class KCorrection(object):
 class JPAS_KCorrection(KCorrection):
     """
     Colour-dependent polynomial fit to the K-correction, 
-    used to convert between JPAS i-band
-    Petrosian apparent magnitudes, and rest frame absolute manigutues 
-    at z_ref = 0.4
+    used to convert between JPAS r-band apparent magnitudes,
+    and rest frame i-band absolute magnitudes at z_ref = 0.4
     
     Args:
         k_corr_file: file of polynomial coefficients for each colour bin
@@ -91,9 +90,11 @@ class JPAS_KCorrection(KCorrection):
         X = np.zeros(self.Nc)
         Y = np.zeros(self.Nc)
         # find X, Y at each colour
-        ## xiu's change: use redshift range [0.2, 0.6].
-        redshift = np.array([0.2, 0.6])
-        #redshift = np.array([0.4,0.5])
+
+        # For miniJPAS, will fit the linear extrapolation 
+        # to the range [0.6, 0.8]
+        redshift = np.array([0.6, 0.8])
+
         arr_ones = np.ones(len(redshift))
         for i in range(self.Nc):
             k = self.k(redshift, arr_ones*self.colour_med[i])
@@ -167,18 +168,22 @@ class JPAS_KCorrection(KCorrection):
 
     def k(self, redshift, colour):
         """
-        Polynomial fit to the GAMA K-correction for z<0.5
-        The K-correction is extrapolated linearly for z>0.5
+        Polynomial fit to the J-PAS K-correction for z<0.8
+        The K-correction is extrapolated linearly for z>0.8
 
         Args:
             redshift: array of redshifts
-            colour:   array of ^0.1(g-r) colour
+            colour:   array of rest-frame (g-r) colour
         Returns:
             array of K-corrections
         """
         K = np.zeros(len(redshift))
+        
         ## xiu's change: JPAS redshift reaches to 1.5
-        idx = redshift <= 1.5
+        # For miniJPAS, use 4-order polynomial to z=0.8,
+        # and linear extrapolation later
+        z_lin = 0.8
+        idx = redshift <= z_lin
 
         if self.cubic:
             K[idx] = self.__A_spline(colour[idx])*(redshift[idx]-self.z0)**4 + \
@@ -193,9 +198,9 @@ class JPAS_KCorrection(KCorrection):
                      self.__D(colour[idx])*(redshift[idx]-self.z0) + \
                      self.__E(colour[idx])
                      
-        #idx = redshift > 0.5
+        idx = redshift > z_lin
         
-        #K[idx] = self.__X(colour[idx])*redshift[idx] + self.__Y(colour[idx])
+        K[idx] = self.__X(colour[idx])*redshift[idx] + self.__Y(colour[idx])
         
         return K
         
@@ -207,7 +212,7 @@ class JPAS_KCorrection(KCorrection):
         Args:
             absolute_magnitude: array of absolute magnitudes (with h=1)
             redshift:           array of redshifts
-            colour:             array of ^0.1(g-r) colour
+            colour:             array of rest-frame (g-r) colour
         Returns:
             array of apparent magnitudes
         """
@@ -224,7 +229,7 @@ class JPAS_KCorrection(KCorrection):
         Args:
             apparent_magnitude: array of apparent magnitudes
             redshift:           array of redshifts
-            colour:             array of ^0.1(g-r) colour
+            colour:             array of rest-frame (g-r) colour
         Returns:
             array of absolute magnitudes (with h=1)
         """
