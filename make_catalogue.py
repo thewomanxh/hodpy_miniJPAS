@@ -24,7 +24,7 @@ def main(input_file, output_file, mag_faint):
     gal_cat  = BGSGalaxyCatalogue(halo_cat)
 
     # use hods to populate galaxy catalogue
-    hod = HOD_BGS()
+    hod = HOD_BGS(mag_faint=mag_faint)
     gal_cat.add_galaxies(hod)
 
     # position galaxies around their haloes
