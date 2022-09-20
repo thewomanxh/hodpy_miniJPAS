@@ -2,6 +2,7 @@
 import numpy as np
 from scipy.interpolate import RegularGridInterpolator
 from scipy.optimize import curve_fit
+from scipy.misc import derivative
 
 from hodpy.power_spectrum import PowerSpectrum
 from hodpy.cosmology import CosmologyPino
@@ -165,9 +166,42 @@ class MassFunctionPino(object):
         
         return mf
 
+    def ln_invsigma_log10M(self, log_mass, redshift):
+        '''
+        Function that gives the (natural) logarithm of the inverse variance (sigma) as function of the
+        (base-10) logarithm of the mass.
+
+        It will be needed for the conversion from f(sigma) to dn/dlog10M
+
+        :param log_mass: base-10 logarithm of the halo mass (M_sun/h)
+        :param redshift: redshift
+        :return: natural logarithm of the inverse of the corresponding variance (sigma)
+        '''
+
+        return np.log(1./self.power_spectrum.sigma(10**log_mass, redshift))
+
+    def d_lninvsigma_d_log10M(self, log_mass, redshift, delta_m_rel=1e-4):
+        '''
+        Estimates the derivative of the `ln_invsigma_log10M()` function for a given value of the mass.
+
+        :param log_mass: base-10 logarithm of the halo mass (M_sun/h)
+        :param redshift: redshift
+        :param delta_m_rel: parameter that sets the relative change in log10(M) used for the
+            finite-differences estimate of the derivative
+        :return: derivative of the ln_invsigma_log10M function
+        '''
+
+        return derivative(func=self.ln_invsigma_log10M, x0=log_mass,
+                            dx=delta_m_rel*log_mass, n=1, args=[redshift,])
+
+
+
     def number_density(self, log_mass, redshift):
         '''
         Returns the number density of haloes as a function of mass and redshift
+
+        We make the correct conversion from f(sigma) to dN/dlog10M following
+        equation (5) in Watson-2013
 
         Args:
             log_mass: array of log_10 halo mass, where halo mass is in units 
@@ -178,6 +212,6 @@ class MassFunctionPino(object):
         '''  
         mf = self.mass_function(log_mass, redshift)
 
-        return mf * self.power_spectrum.cosmo.mean_density(0) / 10**log_mass
+        return mf * self.power_spectrum.cosmo.mean_density(0) * self.d_lninvsigma_d_log10M(log_mass, redshift) / (10 ** log_mass)
         
 
