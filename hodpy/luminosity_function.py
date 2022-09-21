@@ -234,8 +234,9 @@ class LuminosityFunctionTabulated(LuminosityFunction):
 
 class LuminosityFunctionTarget(LuminosityFunction):
     """
-    Target luminosity function. Transitions from tabulated file (z<0.15)
-    to Schechter LF (z>0.15)
+    In the version for the miniJPAS-mocks, this function gives
+    a Schechter Luminosity Function at all redshifts.
+
     Args:
         filename: path to ascii file containing tabulated values of cumulative
                   luminsity function
@@ -292,10 +293,11 @@ class LuminosityFunctionTargetBGS(LuminosityFunctionTarget):
     """
     used to calculate the target luminosity function at z=0.4,
     used to create the BGS mock catalogue. This is the result of integrating the
-    halo mass function multiplied by the HOD. The resulting LF smoothly
-    transitions to the Blanton miniJPAS LF at the faint end, then is
-    extrapolated as a power law.
-    
+    halo mass function multiplied by the HOD.
+
+    The resulting LF smoothly transitions to the Schechter miniJPAS LF
+    at the faint end.
+
     Args:
         lf_file: tabulated file of LF at z=0.4
         lf_param_file: file containing Schechter LF paramters at high z
@@ -305,28 +307,29 @@ class LuminosityFunctionTargetBGS(LuminosityFunctionTarget):
 
         self.Phi_star, self.M_star, self.alpha, self.P, self.Q = \
                         np.loadtxt(lf_param_file, skiprows=3, delimiter=",")
-        
-        ## xiu's change: the lf_miniJPAS is using the P, Q parameters as GAMA
-        #try:
-        #    self.lf_miniJPAS = LuminosityFunctionTabulated(target_lf_file,self.P,self.Q)
-        #except IOError:
-        #    self.lf_miniJPAS = self.__initialize_target_lf(target_lf_file, miniJPAS_lf_file, hod_bgs_simple)
-        self.lf_miniJPAS = LuminosityFunctionSchechter(self.Phi_star, self.M_star, self.alpha, self.P, self.Q)
 
-        self.lf_gama = LuminosityFunctionSchechter(self.Phi_star, self.M_star,
-                                                   self.alpha, self.P, self.Q)
+        self.hod_bgs_simple = hod_bgs_simple
+
+        try:
+            self.lf_miniJPAS = LuminosityFunctionTabulated(target_lf_file,self.P,self.Q)
+        except IOError:
+            self.lf_miniJPAS = self.__initialize_target_lf(target_lf_file, miniJPAS_lf_file)
+        # self.lf_miniJPAS = LuminosityFunctionSchechter(self.Phi_star, self.M_star, self.alpha, self.P, self.Q)
+
         self._interpolator = \
                  self._LuminosityFunction__initialize_interpolator()
         
-        self.hod_bgs_simple = hod_bgs_simple
 
-    def __initialize_target_lf(self, target_lf_file, miniJPAS_lf_file, hod_bgs_simple):
+    def __initialize_target_lf(self, target_lf_file, miniJPAS_lf_file):
         # Create a file of the z=0.4 target LF
 
         print("Calculating target luminosity function")
 
         # array of magnitudes and corresponding number densities
-        mags = np.arange(-18, -24, -0.1)
+        m_faint = -12.0
+        m_bright = -26.0
+        m_step = 0.2
+        mags = np.arange(m_faint, m_bright, -m_step)
         ns = np.zeros(len(mags))
 
         # loop through each magnitude
@@ -334,34 +337,26 @@ class LuminosityFunctionTargetBGS(LuminosityFunctionTarget):
             f = np.array([1.0,]) # HOD 'slide factor', set to 1
             z = np.array([0.4,])
             mag = np.array([mags[i],])
-            ns[i] = hod_bgs_simple.get_n_HOD(mag,z,f) #cumulative LF
+            ns[i] = self.hod_bgs_simple.get_n_HOD(mag,z,f) #cumulative LF
            
         # convert to differential LF
         mag = (mags[1:] + mags[:-1]) / 2.
-        n = (ns[:-1] - ns[1:]) / 0.1
+        n = (ns[:-1] - ns[1:]) / m_step
         
         # do a spline fit to the differential LF
-        mags = np.arange(-10, -28.0000001, -0.001)[::-1]
+        m_step_table = 0.001
+        mags = np.arange(m_faint, m_bright - m_step_table, -m_step_table)[::-1]
         zs = np.ones(len(mags)) * 0.4
 
         tck = splrep(mag[::-1], np.log10(n)[::-1])
         ns = 10**splev(mags, tck)
-       
-        ## xiu's comment: discard the transition at the faint end
-        # transition to blanton at the faint end
-        #lf_miniJPAS = LuminosityFunctionTabulated(miniJPAS_lf_file, self.P, self.Q)
-        #ns_miniJPAS = lf_miniJPAS.Phi(mags, zs)
-        #T =  1. / (1. + np.exp(5*(mags+19))) #transition around mag -19
-        #ns = ns*T + ns_miniJPAS*(1-T)
-        
-        # power law fit to the faint end
-        #def line(x, a, b):
-        #    return a*x + b
-        #keep = np.logical_and(mags<-16.3, mags>-19.5)
-        #popt, pcov = curve_fit(line, mags[keep], np.log10(ns[keep]))
-        #ns_line = 10**line(mags, *popt)
-        #T =  1. / (1. + np.exp(5*(mags+17))) #transition around mag -17
-        #ns = ns*T + ns_line*(1-T)
+
+        # Transition to miniJPAS Schechter LF at the faint end
+        lf_miniJPAS = LuminosityFunctionSchechter(self.Phi_star, self.M_star, self.alpha, self.P, self.Q)
+
+        ns_miniJPAS = lf_miniJPAS.Phi(mags, zs)
+        T =  1. / (1. + np.exp(5*(mags+18)))   # transition around mag -18 TODO: revise this!
+        ns = ns*T + ns_miniJPAS*(1-T)
 
         # convert back to cumulative LF
         data = np.zeros((len(mags),2))
