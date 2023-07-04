@@ -357,16 +357,18 @@ class BGSGalaxyCatalogue(GalaxyCatalogue):
             colour: object of the class Colour
         """
         col = np.zeros(self.size)
-        
+        col_class_red = np.zeros(self.size)
+
         is_cen = self.get("is_cen")
         is_sat = self.get("is_sat")
         abs_mag = self.get("abs_mag")
         z = self.get("zcos")
 
-        col[is_cen] = colour.get_central_colour(abs_mag[is_cen], z[is_cen])
-        col[is_sat] = colour.get_satellite_colour(abs_mag[is_sat], z[is_sat])
+        col[is_cen], col_class_red[is_cen] = colour.get_central_colour(abs_mag[is_cen], z[is_cen])
+        col[is_sat], col_class_red[is_sat] = colour.get_satellite_colour(abs_mag[is_sat], z[is_sat])
 
         self.add("col", col)
+        self.add("col_class_red", col_class_red)
 
 
     def add_apparent_magnitude(self, k_correction):

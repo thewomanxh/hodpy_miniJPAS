@@ -184,7 +184,7 @@ class Colour(object):
         colour = np.random.normal(loc=0.0, scale=1.0, size=num_galaxies)
         colour = colour * stdev + mean
 
-        return colour
+        return colour, is_red
 
 
     def get_central_colour(self, magnitude, redshift):
@@ -229,4 +229,4 @@ class Colour(object):
         colour = np.random.normal(loc=0.0, scale=1.0, size=num_galaxies)
         colour = colour * stdev + mean
 
-        return colour
+        return colour, is_red
