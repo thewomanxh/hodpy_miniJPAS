@@ -118,14 +118,14 @@ class GalaxyCatalogue(Catalogue):
         distance = np.zeros(self.size)
 
         is_sat = self.get("is_sat")
-        conc = self.get_halo("mod_conc")[is_sat]
-        r200 = self.get_halo("r200")[is_sat]
+        conc = self.get_halo("conc")[is_sat]
+        rvir = self.get_halo("rvir")[is_sat]
         u = np.random.rand(len(conc))
 
         interpolator = self.__nfw_interpolator()
         points = np.array(list(zip(np.log10(conc), np.log10(u))))
         distance[is_sat] = 10**interpolator(points)
-        distance[is_sat] *= r200
+        distance[is_sat] *= rvir
         return distance
 
     

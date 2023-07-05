@@ -110,6 +110,21 @@ class Cosmology(object):
             Growth rate
         """
         return self.cosmo_nbodykit.scale_independent_growth_rate(z)
+        
+
+    def Delta_vir(self, z):
+        """
+        Returns the "critical overdensity for virialisation at redshift z".
+        
+        We use the fitting function from eq. (A.12) in Coupon et al. (2012),
+        coming from Weinberg & Kamionkowski (2003).
+        """
+        fact1 = 18*np.pi*np.pi
+        fact2 = 0.399
+        expon = 0.941
+        Omz = self.OmegaM * ((1 + z)**3)
+
+        return fact1*(1. + (fact2*pow((1./Omz) - 1., expon)))
 
     
 class CosmologyPino(Cosmology):

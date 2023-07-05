@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 import numpy as np
 from scipy.integrate import simps, quad
-from scipy.interpolate import splrep, splev
+from scipy.interpolate import splrep, splev, sproot
 from scipy.optimize import minimize
 from nbodykit.lab import cosmology as nbodykit_cosmology
 
@@ -21,7 +21,7 @@ class PowerSpectrum(object):
         
         self.__k = 10**np.arange(-6,6,0.01)
         self.__P = self.P_lin(self.__k, z=0)
-        self.__tck = self.__get_sigma_spline() #spline fit to sigma(M,z=0)
+        self.__tck = self.__get_sigma_spline() #spline fit to logsigma(logR,z=0)
 
         
     def P_lin(self, k, z):
@@ -186,6 +186,20 @@ class PowerSpectrum(object):
             delta_c
         """
         return 1.686 / self.cosmo.growth_factor(z)
-
+        
+    def mass_nonlin0(self):
+        """
+        Returns the 'nonlinear mass scale at redshift 0', defined as \nu=1,
+        or, equivalently, as sigma(mass_nl) = delta_c(0).
+        """
+        logMmin = 10.0
+        logMmax = 16.01
+        logMstep = 0.05
+        mass_array = 10**np.arange(logMmin, logMmax, logMstep)
+        
+        tck_s_dc = splrep(mass_array, self.sigma(mass_array, z=0) - self.delta_c(z=0))
+        
+        return sproot(tck_s_dc)[0]
+        
     
     

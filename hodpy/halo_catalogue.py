@@ -4,13 +4,26 @@ import h5py
 
 from hodpy.cosmology import CosmologyPino
 from hodpy.catalogue import Catalogue
+from hodpy.power_spectrum import PowerSpectrum
 from hodpy import lookup
+
+# Critical density in units of
+# h^2 M_sol Mpc^-3 (from Peacock book)
+# Independent of cosmology, just definition of rho_crit
+# and using H0 and G in adequate units
+# This is adequate for the units used here
+RHO_CRIT_UNITS = 2.7752E+11
 
 
 class HaloCatalogue(Catalogue):
     """
     Parent class for a halo catalogue
     """
+    def __init__(self, cosmology):
+        self._quantities = {}
+        self.size = 0
+        self.cosmology = cosmology
+        self.power_spectrum = PowerSpectrum(self.cosmology)
 
     def get(self, prop):
         """
@@ -26,14 +39,13 @@ class HaloCatalogue(Catalogue):
             return np.log10(self._quantities["mass"])
         elif prop == "r200":
             return self.get_r200()
+        elif prop == "rvir":
+            return self.get_rvir()
         elif prop == "conc":
             return self.get_concentration()
-        elif prop == "mod_conc":
-            return self.get_modified_concentration()
         
         # property directly stored
         return self._quantities[prop]
-
 
     def get_r200(self, comoving=True):
         """
@@ -52,57 +64,37 @@ class HaloCatalogue(Catalogue):
         else:
             return r200
     
+    def get_rvir(self):
+        """
+        Returns the virial radius of each halo.
+        
+        We obtain it from equation (A11) in Coupon et al. (2012)
+        """
+        rho_mean_0 = self.cosmology.mean_density(0)
+        Dvir = self.cosmology.Delta_vir(self.get("zcos"))
+        
+        rvir = (3. * self.get("mass") / (4. * np.pi * rho_mean_0 * Dvir))**(1./3.)
+        
+        return rvir
 
     def get_concentration(self):
         """
-        Returns NFW concentration of each halo, calculated from
-        R200 and RVmax
-
+        Returns NFW concentration of each halo, calculated from the halo mass.
+        We use equation (A.10) from Coupon et al. (2012) (but also used,
+        e.g. in Zehavi et al. 2011)
+        
         Returns:
             array of halo concentrations
         """
-        conc = 2.16 * self.get("r200") / self.get("rvmax")
-
+        c_zero = 11.0
+        beta = 0.13
+        mass_star = self.power_spectrum.mass_nonlin0()
+        
+        conc = (c_zero/(1.+ self.get("zcos")))*((self.get("mass")/mass_star)**(-beta))
+        
         return np.clip(conc, 0.1, 1e4)
 
 
-    def get_modified_concentration(self):
-        """
-        Returns NFW concentration of each halo, modified to
-        produce the right small scale clustering 
-        (see Smith et al 2017)
-
-        Returns:
-            array of halo concentrations
-        """
-        # concentration from R200 and RVmax
-        conc = self.get_concentration()
-        conc_mod = np.zeros(len(conc))
-
-        # mass bins
-        mass_bins = np.arange(10, 16, 0.01)
-        mass_bin_cen = mass_bins[:-1]+ 0.005
-        logc_neto_mean = np.log10(4.67) - 0.11*(mass_bin_cen - 14)
-
-        log_mass = self.get("log_mass")
-        # loop through mass bins
-        for i in range(len(mass_bins)-1):
-            ind = np.where(np.logical_and(log_mass >= mass_bins[i], 
-                                          log_mass < mass_bins[i+1]))[0]
-            
-            # for haloes in mass bin, randomly generate new concentration
-            # from Neto conc-mass relation
-            # sort old and new concentrations from min to max
-            # replace with new concentrations
-
-            logc_new = np.random.normal(loc=logc_neto_mean[i], scale=0.1,
-                                        size=len(ind))
-
-            conc_mod[ind[np.argsort(conc[ind])]] = 10**np.sort(logc_new)
-
-        return conc_mod
-
-    
     
 
 class PinoCatalogue(HaloCatalogue):
@@ -113,6 +105,7 @@ class PinoCatalogue(HaloCatalogue):
     def __init__(self, file_name):
 
         self.cosmology = CosmologyPino()
+        self.power_spectrum = PowerSpectrum(self.cosmology)
 
         # read halo catalogue file
         halo_cat = h5py.File(file_name, "r")
