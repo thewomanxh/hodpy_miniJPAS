@@ -48,7 +48,7 @@ def sigma_function(log_stell_mass, s_faint, s_bright, M_step, width):
     Returns:
         array of sigma_logM
     """
-    sigma = s_faint + (s_bright-s_faint) / (1.+np.exp((log_stell_mass - M_step)*width))
+    sigma = s_faint + (s_bright-s_faint) / (1.+np.exp((M_step - log_stell_mass)*width))
 
     # Add possibility of setting sigma to 0 (if s_faint=s_bright=0)
     # In that case, set it to a small non-zero value (to avoid problems later)
