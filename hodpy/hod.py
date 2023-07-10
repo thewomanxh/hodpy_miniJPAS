@@ -6,13 +6,13 @@ class HOD(object):
     HOD base class
     """
     
-    def number_centrals_mean(self, log_mass, magnitude, redshift):
+    def number_centrals_mean(self, log_mass, log_stell_mass, redshift):
         raise NotImplementedError
 
-    def number_satellites_mean(self, log_mass, magnitude, redshift):
+    def number_satellites_mean(self, log_mass, log_stell_mass, redshift):
         raise NotImplementedError
 
-    def number_galaxies_mean(self, log_mass, magnitude, redshift):
+    def number_galaxies_mean(self, log_mass, log_stell_mass, redshift):
         raise NotImplementedError
 
     def get_number_satellites(self, log_mass, redshift):
