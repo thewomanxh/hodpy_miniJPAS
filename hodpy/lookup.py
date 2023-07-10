@@ -17,7 +17,7 @@ def read_hod_param_file(hod_param_file):
     """
     Read the HOD parameter file
     """
-    params = np.loadtxt(hod_param_file, skiprows=8, delimiter=",")
+    params = np.loadtxt(hod_param_file, comments='#', delimiter=",")
     Mmin_Ls, Mmin_Mt, Mmin_am          = params[0,:3]
     M1_Ls,   M1_Mt,   M1_am            = params[1,:3]
     M0_A,    M0_B                      = params[2,:2]
