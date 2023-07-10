@@ -37,12 +37,11 @@ bgs_hod_parameters    = path+"/hod_params_miniJPAS.dat"
 bgs_hod_slide_factors = path+"/slide_factors.dat" # will be created if doesn't exist
 
 # lookup files for central/satellite magnitudes
-central_lookup_file   = path+"/central_magnitudes.npy"   # will be created if doesn't exist
-satellite_lookup_file = path+"/satellite_magnitudes.npy" # will be created if doesn't exist
+central_lookup_file   = path+"/central_stellmasses.npy"   # will be created if doesn't exist
+satellite_lookup_file = path+"/satellite_stellmasses.npy" # will be created if doesn't exist
 
 # k-corrections
 kcorr_file = path+"/k_corr_iband_z04.dat"
-#kcorr_file = path+"/k_corr_rband_z01.dat"
 
 # miniJPAS luminosity functions
 smf_params      = path+"/smf_params.dat" # describe the miniJPAS catalogue.

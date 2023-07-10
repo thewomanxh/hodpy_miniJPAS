@@ -7,7 +7,7 @@ from hodpy.galaxy_catalogue import BGSGalaxyCatalogue
 from hodpy.cosmology import CosmologyPino
 from hodpy.mass_function import MassFunctionPino
 from hodpy.hod_bgs import HOD_BGS
-from hodpy.k_correction import JPAS_KCorrection
+from hodpy.kmass_correction import JPAS_KMCorrection
 from hodpy.colour import Colour
 from hodpy import lookup
 
@@ -35,7 +35,7 @@ def main(input_file, output_file, mag_faint):
     gal_cat.add_colours(col)
 
     # use colour-dependent k-correction to get apparent magnitude
-    kcorr = JPAS_KCorrection(CosmologyPino())
+    kcorr = JPAS_KMCorrection(CosmologyPino())
     gal_cat.add_apparent_magnitude(kcorr)
 
     # cut to galaxies brighter than apparent magnitude threshold
@@ -43,13 +43,13 @@ def main(input_file, output_file, mag_faint):
 
     # save catalogue to file
     gal_cat.save_to_file(output_file, format="hdf5", halo_properties=["mass",])
-    
 
-    
+
+
 if __name__ == "__main__":
-    
+
     input_file = "input/halo_catalogue_pinocchio.hdf5"
     output_file = "output/galaxy_catalogue_pinocchio.hdf5"
     mag_faint = 20.0 # faintest apparent magnitude
-    
+
     main(input_file, output_file, mag_faint)

@@ -9,7 +9,7 @@ from pathos.pools import ProcessPool
 from hodpy.stellar_mass_function import StellarMassFunctionTargetBGS
 from hodpy.mass_function import MassFunctionPino
 from hodpy.cosmology import CosmologyPino
-from hodpy.k_correction import JPAS_KCorrection
+from hodpy.kmass_correction import JPAS_KMCorrection
 from hodpy import spline
 from hodpy.hod import HOD
 from hodpy import lookup
@@ -66,7 +66,7 @@ class HOD_BGS(HOD):
         [mass_function]: hodpy.MassFunction object, the mass functino of the simulation (default is MassFunctionPino)
         [cosmology]:     hodpy.Cosmology object, the cosmology of the simulation (default is CosmologyPino)
         [mag_faint]:     faint apparent magnitude limit (default is 20.0)
-        [kcorr]:         hodpy.KCorrection object, the k-correction (default is JPAS_KCorrection)
+        [kcorr]:         hodpy.KMCorrection object, the k-mass-correction (default is JPAS_KMCorrection)
         [hod_param_file]: location of file which contains HOD parameters
         [slide_file]:    location of file which contains 'slide' factors for evolving HODs. Will be created
                          automatically if the file doesn't already exist
@@ -81,12 +81,12 @@ class HOD_BGS(HOD):
         [replace_satellite_lookup]: if set to True, will replace satellite_lookup_file even if the file exists
     """
 
-    def __init__(self, mass_function=MassFunctionPino(), cosmology=CosmologyPino(), 
-                 mag_faint=20.0, kcorr=JPAS_KCorrection(CosmologyPino()), 
+    def __init__(self, mass_function=MassFunctionPino(), cosmology=CosmologyPino(),
+                 mag_faint=20.0, kcorr=JPAS_KMCorrection(CosmologyPino()),
                  hod_param_file=lookup.bgs_hod_parameters,
-                 slide_file=lookup.bgs_hod_slide_factors, 
+                 slide_file=lookup.bgs_hod_slide_factors,
                  central_lookup_file=lookup.central_lookup_file,
-                 satellite_lookup_file=lookup.satellite_lookup_file, 
+                 satellite_lookup_file=lookup.satellite_lookup_file,
                  target_smf_file=lookup.target_smf,
                  smf_param_file=lookup.smf_params,
                  replace_central_lookup=False, replace_satellite_lookup=False):
@@ -286,8 +286,7 @@ class HOD_BGS(HOD):
 
             log_sm = np.arange(3, 19, 0.01)
 
-            # TODO: update KM-corr function here
-            log_sm_faint = self.kcorr.magnitude_faint(redshifts, self.mag_faint)
+            log_sm_faint = self.kcorr.log_stellar_mass_faint(redshifts, self.mag_faint)
             arr_ones = np.ones(len(mags))
             for i in range(len(log_masses)):
                 for j in range(len(redshifts)):
@@ -361,10 +360,10 @@ class HOD_BGS(HOD):
         """
         # use target SMF to convert stellar mass to number density
         n = self.smf.Phi_cumulative(log_stell_mass, redshift)
-        
-        # find stellar mass at z=zref which corresponds to the same number density 
+
+        # find stellar mass at z=zref which corresponds to the same number density
         log_stell_mass_zref = self.smf.log_stell_mass(n, np.ones(len(n))*self.smf.zref)
-        
+
         # find Mmin
         Mmin = 10**self.__logMmin_interpolator(log_stell_mass_zref)
         # use slide factor to evolve Mmin
@@ -386,10 +385,10 @@ class HOD_BGS(HOD):
         """
         # use target SMF to convert stellar mass to number density
         n = self.smf.Phi_cumulative(log_stell_mass, redshift)
-                
-        # find stellar mass at z=zref which corresponds to the same number density 
+
+        # find stellar mass at z=zref which corresponds to the same number density
         log_stell_mass_zref = self.smf.log_stell_mass(n, np.ones(len(n))*self.smf.zref)
-                
+
         # find Mmin
         M1 = 10**self.__logM1_interpolator(log_stell_mass_zref)
         # use slide factor to evolve Mmin
@@ -415,8 +414,8 @@ class HOD_BGS(HOD):
         else:
             # use target SMF to convert stellar mass to number density
             n = self.smf.Phi_cumulative(log_stell_mass, redshift)
-                            
-            # find stellar mass at z=zref which corresponds to the same number density 
+
+            # find stellar mass at z=zref which corresponds to the same number density
             log_stell_mass_zref = self.smf.log_stell_mass(n, np.ones(len(n))*self.smf.zref)
 
             # find M0
@@ -441,8 +440,8 @@ class HOD_BGS(HOD):
         """
         # use target SMF to convert stellar mass to number density
         n = self.smf.Phi_cumulative(log_stell_mass, redshift)
-                        
-        # find stellar mass at z=zref which corresponds to the same number density 
+
+        # find stellar mass at z=zref which corresponds to the same number density
         log_stell_mass_zref = self.smf.log_stell_mass(n, np.ones(len(n))*self.smf.zref)
 
         # find alpha
@@ -464,8 +463,8 @@ class HOD_BGS(HOD):
         """
         # use target SMF to convert stellar mass to number density
         n = self.smf.Phi_cumulative(log_stell_mass, redshift)
-                        
-        # find stellar mass at z=zref which corresponds to the same number density 
+
+        # find stellar mass at z=zref which corresponds to the same number density
         log_stell_mass_zref = self.smf.log_stell_mass(n, np.ones(len(n))*self.smf.zref)
 
         # find sigma_logM
@@ -540,8 +539,7 @@ class HOD_BGS(HOD):
             array of number of satellite galaxies
         """
         # Get stellar mass threshold corresponding to mag_faint
-        # TODO: update KM-corr function here
-        log_sm_faint = self.kcorr.magnitude_faint(redshift, self.mag_faint)
+        log_sm_faint = self.kcorr.log_stellar_mass_faint(redshift, self.mag_faint)
 
         # mean number of satellites in each halo brighter than the
         # faint magnitude threshold
@@ -782,4 +780,3 @@ class HOD_BGS_Simple(HOD):
         """
         return self.number_centrals_mean(log_mass, log_stell_mass, redshift, f) + \
             self.number_satellites_mean(log_mass, log_stell_mass, redshift, f)
-

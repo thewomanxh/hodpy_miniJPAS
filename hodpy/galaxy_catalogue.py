@@ -19,7 +19,7 @@ class GalaxyCatalogue(Catalogue):
         self.size = 0
         self.haloes = haloes
         self.cosmology = cosmology
-        
+
 
     def get(self, prop):
         """
@@ -57,7 +57,7 @@ class GalaxyCatalogue(Catalogue):
 
             else:
                 self._quantities[quantity] = self._quantities[quantity][keep]
- 
+
         self.size = np.count_nonzero(keep)
 
 
@@ -74,41 +74,42 @@ class GalaxyCatalogue(Catalogue):
 
     def add_galaxies(self, hod):
         """
-        Use hod to randomly generate galaxy absolute magnitudes.
-        Adds absolute magnitudes, central index, halo index,
+        Use hod to randomly generate galaxy stellar masses.
+        Adds stellar masses, central index, halo index,
         and central/satellite flag to the catalogue.
         Args:
             hod: object of the class HOD
         """
-        # assign galaxy luminosities
-        mag_cen = hod.get_magnitude_centrals(self.haloes.get("log_mass"), 
-                                             self.haloes.get("zcos"))
-
-        num_sat = hod.get_number_satellites(self.haloes.get("log_mass"), 
-                                             self.haloes.get("zcos"))
-        ind_cen, mag_sat = \
-            hod.get_magnitude_satellites(self.haloes.get("log_mass"), num_sat,
+        # assign log(stellar masses)
+        log_smass_cen = hod.get_lstellmass_centrals(self.haloes.get("log_mass"),
+                                                    self.haloes.get("zcos"))
+        n_cen = len(log_smass_cen)
+        num_sat = hod.get_number_satellites(self.haloes.get("log_mass"),
+                                            self.haloes.get("zcos"))
+        ind_cen, log_smass_sat = \
+            hod.get_lstellmass_satellites(self.haloes.get("log_mass"), num_sat,
                                          self.haloes.get("zcos"))
 
         # update size of catalogue
-        self.size = len(mag_cen) + len(mag_sat)
+        self.size = len(log_smass_cen) + len(log_smass_sat)
 
         # add quantities to catalogue
-        # add absolute magnitudes
-        magnitudes = np.concatenate([mag_cen, mag_sat])
-        self.add("abs_mag", magnitudes)
+
+        # add (log of) stellar masses
+        log_smass = np.concatenate([log_smass_cen, log_smass_sat])
+        self.add("log_stell_mass", log_smass)
 
         # add index of central galaxy
-        ind_cen = np.concatenate([np.arange(len(mag_cen)), ind_cen])
+        ind_cen = np.concatenate([np.arange(n_cen), ind_cen])
         self.add("cen_ind", ind_cen)
 
         # add boolean array of is central galaxy
         is_cen = np.zeros(self.size, dtype="bool")
-        is_cen[:len(mag_cen)] = True
+        is_cen[:n_cen] = True
         self.add("is_cen", is_cen)
 
         # add index of host halo in halo catalogue
-        halo_ind_cen = np.arange(len(mag_cen))
+        halo_ind_cen = np.arange(n_cen)
         halo_ind = halo_ind_cen[ind_cen]
         self.add("halo_ind", halo_ind)
 
@@ -128,7 +129,7 @@ class GalaxyCatalogue(Catalogue):
         distance[is_sat] *= rvir
         return distance
 
-    
+
     def _get_relative_positions(self, distance):
         # relative position of galaxy to centre of halo
         pos_rel = np.zeros((self.size,3))
@@ -160,15 +161,15 @@ class GalaxyCatalogue(Catalogue):
 
         return pos_rel
 
-    
+
     def _get_positions(self, distance):
         # positions satellites randomly at the specified distance from the
         # central. Returns ra, dec, z
 
         # 3d position of halo
-        pos_halo = self.equitorial_to_pos3d(self.get_halo("ra"), 
+        pos_halo = self.equitorial_to_pos3d(self.get_halo("ra"),
                                 self.get_halo("dec"), self.get_halo("zcos"))
-        
+
         pos_rel = self._get_relative_positions(distance)
 
         ra, dec, z_cos = self.pos3d_to_equitorial(pos_halo + pos_rel)
@@ -218,7 +219,7 @@ class GalaxyCatalogue(Catalogue):
         self.add("dec", dec)
         self.add("zcos", z_cos)
         self.add("zobs", z_obs)
-        
+
 
     def __f(self, x):
         return np.log(1.+x) - x/(1.+x)
@@ -245,25 +246,25 @@ class GalaxyCatalogue(Catalogue):
             # find this in the array log_us
             idx = np.searchsorted(log_u, log_us)
 
-            # interpolate 
+            # interpolate
             f = (log_us - log_u[idx-1]) / (log_u[idx] - log_u[idx-1])
             log_ss[i,:] = log_s[idx-1] + f*(log_s[idx]-log_s[idx-1])
 
         return RegularGridInterpolator((log_cs, log_us), log_ss,
                                        bounds_error=False, fill_value=None)
-    
 
-    def add_apparent_magnitude(self, k_correction):
+
+    def add_apparent_magnitude(self, km_correction):
         """
         Add apparent magnitude to catalogue
         Args:
-            k_correction: object of the class KCorrection
+            km_correction: object of the class KMCorrection
         """
-        app_mag = k_correction.apparent_magnitude(self.get("abs_mag"),
+        app_mag = km_correction.apparent_magnitude(self.get("log_stell_mass"),
                                                   self.get("zcos"))
         self.add("app_mag", app_mag)
 
-        
+
     def save_to_file(self, file_name, format, properties=None,
                      halo_properties=None):
         """
@@ -288,12 +289,12 @@ class GalaxyCatalogue(Catalogue):
 
             f = h5py.File(file_name, "a")
 
-            if properties is None: 
+            if properties is None:
                 # save every property
                 for quantity in self._quantities:
                     f.create_dataset(quantity, data=self._quantities[quantity],
                                      compression="gzip")
-            else: 
+            else:
                 # save specified properties
                 for quantity in properties:
                     f.create_dataset(quantity, data=self._quantities[quantity],
@@ -308,10 +309,10 @@ class GalaxyCatalogue(Catalogue):
 
         elif format == "fits":
             from astropy.table import Table
-            
+
             if properties is None:
                 # save every property
-                t = Table(list(self._quantities.values()), 
+                t = Table(list(self._quantities.values()),
                           names=list(self._quantities.keys()))
                 t.write(file_name, format="fits")
             else:
@@ -349,7 +350,7 @@ class BGSGalaxyCatalogue(GalaxyCatalogue):
         self.haloes = haloes
         self.cosmology = CosmologyPino()
 
-        
+
     def add_colours(self, colour):
         """
         Add colours to the galaxy catalogue.
@@ -361,25 +362,23 @@ class BGSGalaxyCatalogue(GalaxyCatalogue):
 
         is_cen = self.get("is_cen")
         is_sat = self.get("is_sat")
-        abs_mag = self.get("abs_mag")
+        log_smass = self.get("log_stellar_mass")
         z = self.get("zcos")
 
-        col[is_cen], col_class_red[is_cen] = colour.get_central_colour(abs_mag[is_cen], z[is_cen])
-        col[is_sat], col_class_red[is_sat] = colour.get_satellite_colour(abs_mag[is_sat], z[is_sat])
+        col[is_cen], col_class_red[is_cen] = colour.get_central_colour(log_smass[is_cen], z[is_cen])
+        col[is_sat], col_class_red[is_sat] = colour.get_satellite_colour(log_smass[is_sat], z[is_sat])
 
         self.add("col", col)
         self.add("col_class_red", col_class_red)
 
 
-    def add_apparent_magnitude(self, k_correction):
+    def add_apparent_magnitude(self, km_correction):
         """
         Add apparent magnitude to catalogue, using a colour-dependent
-        k-correction
+        k-mass-correction
         Args:
-            k_correction: object of the class GAMA_KCorrection
+            km_correction: object of the class JPAS_KMCorrection
         """
-        app_mag = k_correction.apparent_magnitude(self.get("abs_mag"),
+        app_mag = km_correction.apparent_magnitude(self.get("log_stellar_mass"),
                                          self.get("zcos"), self.get("col"))
         self.add("app_mag", app_mag)
-
-
