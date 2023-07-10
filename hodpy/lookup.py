@@ -37,7 +37,7 @@ central_lookup_file   = path+"/central_stellmasses.npy"   # will be created if d
 satellite_lookup_file = path+"/satellite_stellmasses.npy" # will be created if doesn't exist
 
 # k-corrections
-kcorr_file = path+"/k_corr_iband_z04.dat"
+kcorr_file = path+"/k_mass_corr_imag_z04.dat"
 
 # miniJPAS luminosity functions
 smf_params      = path+"/smf_params.dat" # describe the miniJPAS catalogue.
