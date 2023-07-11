@@ -648,7 +648,7 @@ class HOD_BGS_Simple(HOD):
         # creates a RegularGridInterpolator object used for finding
         # the HOD parameters Mmin or M1 (at z=zref) as a function of log_stell_mass
 
-        log_mass = np.arange(11, 18, 0.001)[::-1]
+        log_mass = np.arange(11, 18, 0.001)
         log_stell_masses = M_function(log_mass, L_s, M_t, a_m)
         return RegularGridInterpolator((log_stell_masses,), log_mass,
                                        bounds_error=False, fill_value=None)
