@@ -115,7 +115,6 @@ class Colour(object):
         """
         Fraction of central galaxies as a function of stellar mass and redshift
 
-        TODO: Obtain this function from HOD model used for J-PAS mocks
 
         Args:
             log_stellar_mass: array of log(stellar mass) [M_sun]
@@ -124,7 +123,7 @@ class Colour(object):
             array of fraction of central galaxies (number of satellites divided by number of centrals)
         """
         # number of satellites divided by number of centrals
-        nsat_ncen = 0.35 * (2 - erfc(0.6*(log_stellar_mass - 10)))
+        nsat_ncen = 0.0849 * (2 - erfc((10.94 - log_stellar_mass)/0.371))
         return 1 / (1 + nsat_ncen)
 
 
