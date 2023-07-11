@@ -4,7 +4,7 @@ import numpy as np
 from scipy.interpolate import RegularGridInterpolator
 from scipy.integrate import quad
 from scipy.optimize import minimize, root
-from pathos.pools import ProcessPool
+
 
 from hodpy.stellar_mass_function import StellarMassFunctionTargetBGS
 from hodpy.mass_function import MassFunctionPino
@@ -184,7 +184,8 @@ class HOD_BGS(HOD):
         except:
             # file doesn't exist - calculate factors
             # Note: this is very slow!!
-            # The nested loop could be sped up by running the root finding in parallel
+            # Import needed for parallel calculation
+            from pathos.pools import ProcessPool
 
             print("Calculating evolution parameters")
 
