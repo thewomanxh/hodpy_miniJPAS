@@ -270,15 +270,15 @@ class HOD_BGS(HOD):
         log_masses = np.arange(11, 18, 0.02)
         redshifts = np.arange(0, 1, 0.02)
         log_xs = np.arange(-12, 0.01, 0.05)
-        log_stellar_masses = np.zeros((len(log_masses), len(redshifts), len(log_xs)))
+        log_stell_masses = np.zeros((len(log_masses), len(redshifts), len(log_xs)))
 
         try:
             if replace_satellite_file: raise IOError
 
             # try to read 3d array of stellar masses from file
-            log_stellar_masses = np.load(satellite_lookup_file)
+            log_stell_masses = np.load(satellite_lookup_file)
 
-            if log_stellar_masses.shape!=(len(log_masses), len(redshifts), len(log_xs)):
+            if log_stell_masses.shape!=(len(log_masses), len(redshifts), len(log_xs)):
                 raise ValueError("Satellite lookup table has unexpected shape")
 
         except IOError:
