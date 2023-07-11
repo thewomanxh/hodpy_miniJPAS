@@ -362,7 +362,7 @@ class BGSGalaxyCatalogue(GalaxyCatalogue):
 
         is_cen = self.get("is_cen")
         is_sat = self.get("is_sat")
-        log_smass = self.get("log_stellar_mass")
+        log_smass = self.get("log_stell_mass")
         z = self.get("zcos")
 
         col[is_cen], col_class_red[is_cen] = colour.get_central_colour(log_smass[is_cen], z[is_cen])
@@ -379,6 +379,6 @@ class BGSGalaxyCatalogue(GalaxyCatalogue):
         Args:
             km_correction: object of the class JPAS_KMCorrection
         """
-        app_mag = km_correction.apparent_magnitude(self.get("log_stellar_mass"),
+        app_mag = km_correction.apparent_magnitude(self.get("log_stell_mass"),
                                          self.get("zcos"), self.get("col"))
         self.add("app_mag", app_mag)
