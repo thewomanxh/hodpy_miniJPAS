@@ -198,7 +198,7 @@ class StellarMassFunctionTabulated(StellarMassFunction):
         self.zref = zref
 
         self.__smf_interpolator = \
-            RegularGridInterpolator((self.log_stell_mass,), self.log_number_density,
+            RegularGridInterpolator((self.log_stell_mass[::-1],), self.log_number_density[::-1],
                                     bounds_error=False, fill_value=None)
 
     def Phi_cumulative(self, magnitude, redshift):
