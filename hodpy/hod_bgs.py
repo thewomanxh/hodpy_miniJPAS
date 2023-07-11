@@ -287,7 +287,7 @@ class HOD_BGS(HOD):
             log_sm = np.arange(3, 19, 0.01)
 
             log_sm_faint = self.kcorr.log_stellar_mass_faint(redshifts, self.mag_faint)
-            arr_ones = np.ones(len(mags))
+            arr_ones = np.ones(len(log_sm))
             for i in range(len(log_masses)):
                 for j in range(len(redshifts)):
                     Nsat = self.number_satellites_mean(arr_ones*log_masses[i], log_sm,
