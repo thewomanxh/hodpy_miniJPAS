@@ -272,8 +272,8 @@ class StellarMassFunctionTargetBGS(StellarMassFunction):
         log_stell_masses = np.arange(log_sm_faint, log_sm_bright, log_sm_step)
         ns = np.zeros(len(log_stell_masses))
 
-        # loop through each magnitude
-        for i in range(len(mags)):
+        # loop through each stellar mass
+        for i in range(len(log_stell_masses)):
             f = np.array([1.0,]) # HOD 'slide factor', set to 1
             z = np.array([self.zref,]) # Calculate at zref
             log_sm = np.array([log_stell_masses[i],])
