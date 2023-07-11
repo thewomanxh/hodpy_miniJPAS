@@ -6,7 +6,6 @@ from scipy.misc import derivative
 
 from hodpy.power_spectrum import PowerSpectrum
 from hodpy.cosmology import CosmologyPino
-from hodpy import lookup
 
 
 class MassFunction(object):
@@ -107,40 +106,19 @@ class MassFunction(object):
 
 class MassFunctionPino(object):
     """
-    Class containing the fits to the Pino halo mass function
+    Class containing the fits to the Pinocchio halo mass function.
+    
+    The mass function is obtained from eq. 12 of Watson+2013. (FOF)
 
     Args:
         mf_fits_file: Tabulated file of the best fit mass function parameters
     """
-    def __init__(self, mf_fits_file=lookup.Pino_mass_function):
+    def __init__(self):
         
         #self.power_spectrum = power_spectrum
         self.cosmology = CosmologyPino()
         self.power_spectrum = PowerSpectrum(self.cosmology)
         
-        # read in Pino mass function fit parameters
-        snap, redshift, A, a, p = \
-                   np.loadtxt(mf_fits_file, skiprows=1, unpack=True)
-        
-        # interpolate parameters
-        self._A = RegularGridInterpolator((redshift,), A, bounds_error=False, 
-                                          fill_value=None)
-
-        self._a = RegularGridInterpolator((redshift,), a, bounds_error=False, 
-                                          fill_value=None)
-
-        self._p = RegularGridInterpolator((redshift,), p, bounds_error=False, 
-                                          fill_value=None)
-
-    def A(self, redshift):
-        return self._A(redshift)
-
-    def a(self, redshift):
-        return self._a(redshift)
-
-    def p(self, redshift):
-        return self._p(redshift)
-
     def mass_function(self, log_mass, redshift):
         '''
         Returns the halo mass function as a function of mass and redshift
