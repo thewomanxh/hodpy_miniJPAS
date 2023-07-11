@@ -22,10 +22,14 @@ class StellarMassFunction(object):
         log_stell_masses = np.zeros((len(redshifts), len(log_number_densities)))
 
         # Fill in 2d array of log stellar masses
-        log_sm = np.arange(4, 18, 0.001)
+        # Define array in inverse order so that 'searchsorted' works later
+        log_sm = np.arange(4, 18, 0.001)[::-1]
         for i in range(len(redshifts)):
             # find number density at each stellar mass in log_sm
             log_ns = np.log10(self.Phi_cumulative(log_sm, redshifts[i]))
+
+            # avoid -infinity
+            log_ns = np.clip(log_ns, -350, 350)
 
             # find this number density in the array log_number_densities
             idx = np.searchsorted(log_ns, log_number_densities)
@@ -77,7 +81,9 @@ class StellarMassFunction(object):
         log_sm = np.arange(4, 18, delta)
         phi_cums = self.Phi_cumulative(log_sm, self.zref)
         phi = (phi_cums[:-1] - phi_cums[1:]) / delta
-        tck = splrep(log_sm[:-1] + (delta/2), np.log10(phi))
+        # clip to avoid -infinity
+        log_phi = np.clip(np.log10(phi), -350, 350)
+        tck = splrep(log_sm[:-1] + (delta/2), log_phi)
         return splev(log_stell_mass, tck)
 
     def Phi_cumulative(self, log_stell_mass, redshift):
@@ -288,9 +294,11 @@ class StellarMassFunctionTargetBGS(StellarMassFunction):
         log_stell_masses = np.arange(log_sm_faint, 
                                      log_sm_bright + log_sm_step_table,
                                      log_sm_step_table)[::-1] # Inverse order needed to use cumsum later
-        zs = np.ones(len(log_stell_masses)) * self.zref 
-        
-        tck = splrep(log_stell_mass, np.log10(n))
+        zs = np.ones(len(log_stell_masses)) * self.zref
+
+        # First, clip the values to avoid -infinity
+        log_n = np.clip(np.log10(n), -350, 350)
+        tck = splrep(log_stell_mass, log_n)
         ns = 10**splev(log_stell_masses, tck)
 
         # Transition to miniJPAS Schechter SMF at the faint end
@@ -307,7 +315,9 @@ class StellarMassFunctionTargetBGS(StellarMassFunction):
         # convert back to cumulative SMF
         data = np.zeros((len(log_stell_masses), 2))
         data[:,0] = log_stell_masses   # I remove the '+step/2' here
-        data[:,1] = np.log10(np.cumsum(ns*log_sm_step_table))
+        #data[:,1] = np.log10(np.cumsum(ns*log_sm_step_table))
+        # clip to avoid -infinity
+        data[:,1] = np.clip(np.log10(np.cumsum(ns*log_sm_step_table)), -350, 350)
         # save to file
         np.savetxt(target_smf_file, data)
 
