@@ -243,7 +243,7 @@ class StellarMassFunctionTargetBGS(StellarMassFunction):
     def __init__(self, target_smf_file, smf_param_file, hod_bgs_simple):
 
         self.Phi_star, self.M_star, self.alpha, \
-            self.P1, self.P2, self.Q\
+            self.P1, self.P2, self.Q, \
             self.zref, self.log_M_transition = \
                 np.loadtxt(smf_param_file, comments='#', delimiter=",")
 
