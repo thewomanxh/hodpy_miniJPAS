@@ -18,7 +18,7 @@ class StellarMassFunction(object):
 
         # arrays of z and log_n, and empty 2d array log_stell_masses
         redshifts = np.arange(0, 1, 0.01)
-        log_number_densities = np.arange(-12, -0.5, 0.01)
+        log_number_densities = np.arange(-12, -1.5, 0.01)
         log_stell_masses = np.zeros((len(redshifts), len(log_number_densities)))
 
         # Fill in 2d array of log stellar masses
