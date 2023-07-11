@@ -29,7 +29,7 @@ def M_function(log_mass, L_s, M_t, a_m):
     Returns:
         array of log(stellar mass) [Msun]
     """
-    s_mass = A*(10**log_mass/M_t)**a_m * np.exp(1-(M_t/10**log_mass))
+    s_mass = L_s*(10**log_mass/M_t)**a_m * np.exp(1-(M_t/10**log_mass))
     log_stell_mass = np.log10(s_mass)
     return log_stell_mass
 
