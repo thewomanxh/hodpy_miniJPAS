@@ -237,7 +237,7 @@ class HOD_BGS(HOD):
         except IOError:
             # file doesn't exist - fill in array of log(stellar masses)
             print("Generating lookup table of central galaxy stellar masses")
-            log_sm = np.arange(3, 19, 0.01)
+            log_sm = np.arange(5, 14, 0.01)
             arr_ones = np.ones(len(log_sm), dtype="f")
             for i in range(len(log_masses)):
                 for j in range(len(redshifts)):
@@ -285,7 +285,7 @@ class HOD_BGS(HOD):
             # file doesn't exist - fill in array of log(stellar masses)
             print("Generating lookup table of satellite galaxy stellar masses")
 
-            log_sm = np.arange(3, 19, 0.01)
+            log_sm = np.arange(5, 14, 0.01)
 
             log_sm_faint = self.kcorr.log_stellar_mass_faint(redshifts, self.mag_faint)
             arr_ones = np.ones(len(log_sm))
