@@ -59,6 +59,9 @@ class GalaxyCatalogue(Catalogue):
                 self._quantities[quantity] = self._quantities[quantity][keep]
 
         self.size = np.count_nonzero(keep)
+        
+        # Log message
+        print(f"After the cut, there are {self.size} galaxies left in the catalogue")
 
 
     def get_halo(self, prop):
@@ -112,6 +115,9 @@ class GalaxyCatalogue(Catalogue):
         halo_ind_cen = np.arange(n_cen)
         halo_ind = halo_ind_cen[ind_cen]
         self.add("halo_ind", halo_ind)
+        
+        # Log message
+        print(f"Added {self.size} galaxies to the catalogue.")
 
 
     def _get_distances(self):
@@ -219,6 +225,9 @@ class GalaxyCatalogue(Catalogue):
         self.add("dec", dec)
         self.add("zcos", z_cos)
         self.add("zobs", z_obs)
+        
+        # Log message
+        print(f"Added the positions for {self.size} galaxies in the catalogue")
 
 
     def __f(self, x):
@@ -337,6 +346,8 @@ class GalaxyCatalogue(Catalogue):
         else:
             raise ValueError("Invalid file format")
 
+        # Log message
+        print(f"The catalogue with {self.size} galaxies was saved to file {file_name}.")
 
 class BGSGalaxyCatalogue(GalaxyCatalogue):
     """
@@ -370,6 +381,9 @@ class BGSGalaxyCatalogue(GalaxyCatalogue):
 
         self.add("col", col)
         self.add("col_class_red", col_class_red)
+        
+        # Log message
+        print(f"Added colour information for {self.size} galaxies in the catalogue")
 
 
     def add_apparent_magnitude(self, km_correction):
@@ -382,3 +396,8 @@ class BGSGalaxyCatalogue(GalaxyCatalogue):
         app_mag = km_correction.apparent_magnitude(self.get("log_stell_mass"),
                                          self.get("zcos"), self.get("col"))
         self.add("app_mag", app_mag)
+
+        # Log message
+        print(f"Added apparent magnitude for {self.size} galaxies in the catalogue")
+        
+        
