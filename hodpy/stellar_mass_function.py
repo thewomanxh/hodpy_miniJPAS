@@ -23,7 +23,7 @@ class StellarMassFunction(object):
 
         # Fill in 2d array of log stellar masses
         # Define array in inverse order so that 'searchsorted' works later
-        log_sm = np.arange(5, 14, 0.001)[::-1]
+        log_sm = np.arange(5, 13, 0.001)[::-1]
         for i in range(len(redshifts)):
             # find number density at each stellar mass in log_sm
             log_ns = np.log10(self.Phi_cumulative(log_sm, redshifts[i]))
@@ -78,7 +78,7 @@ class StellarMassFunction(object):
     def __Phi_zref(self, log_stell_mass):
         # returns a spline fit to the SMF at z=zref (using the cumulative SMF)
         delta = 0.001
-        log_sm = np.arange(5, 14, delta)
+        log_sm = np.arange(5, 13, delta)
         phi_cums = self.Phi_cumulative(log_sm, self.zref)
         phi = (phi_cums[:-1] - phi_cums[1:]) / delta
         # clip to avoid -infinity
@@ -178,7 +178,7 @@ class StellarMassFunctionSchechter(StellarMassFunction):
                            t**(self.alpha + 1)*np.exp(-t)) / (self.alpha + 1)
 
         return lf
-        
+
 class StellarMassFunctionTabulated(StellarMassFunction):
     """
     Stellar Mass function from tabulated file, with evolution
@@ -195,7 +195,7 @@ class StellarMassFunctionTabulated(StellarMassFunction):
         zref: reference redshift
     """
     def __init__(self, filename, P1, P2, Q, zref=0.4):
-        
+
         self.log_stell_mass, self.log_number_density = \
                                  np.loadtxt(filename, unpack=True)
         self.P1 = P1
@@ -209,7 +209,7 @@ class StellarMassFunctionTabulated(StellarMassFunction):
 
     def Phi_cumulative(self, log_stell_mass, redshift):
         """
-        Cumulative stellar mass function as a function of log(stellar mass) 
+        Cumulative stellar mass function as a function of log(stellar mass)
         and redshift
         Args:
             log_stell_mass: array of log10(stellar mass) [M_sun]
@@ -218,7 +218,7 @@ class StellarMassFunctionTabulated(StellarMassFunction):
             array of number densities [h^3/Mpc^3]
         """
 
-        # shift stellar masses to z=zref 
+        # shift stellar masses to z=zref
         log_stell_mass_ref = log_stell_mass - self.Q * (redshift - self.zref)
 
         # find interpolated number density at z=zref
@@ -227,25 +227,25 @@ class StellarMassFunctionTabulated(StellarMassFunction):
         # shift back to redshift
         log_smf = log_smf_ref + self.P1 * (redshift - self.zref) \
                               + self.P2 * ((redshift - self.zref)**2)
-        
+
         return 10**log_smf
-        
+
 class StellarMassFunctionTargetBGS(StellarMassFunction):
     """
     Used to calculate the target stellar mass function at z=zref,
     used to create the BGS mock catalogue.
     This is the result of integrating halo mass function multiplied by the HOD.
 
-    The resulting SMF smoothly transitions to the Schechter miniJPAS SMF 
+    The resulting SMF smoothly transitions to the Schechter miniJPAS SMF
     at the faint end.
 
     Args:
-        target_smf_file: tabulated file of SMF at z=zref 
+        target_smf_file: tabulated file of SMF at z=zref
                         (if it does not exist, it will be created at __init__)
         smf_param_file: file containing Schechter SMF parameters:
             Phi_star, log_M_star, alpha, P1, P2, Q, zref, log_M_transition, width_transition
     """
-    
+
     def __init__(self, target_smf_file, smf_param_file, hod_bgs_simple):
 
         self.Phi_star, self.log_M_star, self.alpha, \
@@ -257,14 +257,14 @@ class StellarMassFunctionTargetBGS(StellarMassFunction):
 
         try:
             self.smf_miniJPAS = \
-                StellarMassFunctionTabulated(target_smf_file, self.P1, self.P2, 
+                StellarMassFunctionTabulated(target_smf_file, self.P1, self.P2,
                                              self.Q, self.zref)
         except IOError:
             self.smf_miniJPAS = self.__initialize_target_smf(target_smf_file)
 
         self._interpolator = \
                  self._StellarMassFunction__initialize_interpolator()
-        
+
 
     def __initialize_target_smf(self, target_smf_file):
         # Create a file of the z=zref target SMF
@@ -273,7 +273,7 @@ class StellarMassFunctionTargetBGS(StellarMassFunction):
 
         # array of log stellar masses and corresponding number densities
         log_sm_faint = 5.0
-        log_sm_bright = 14.0
+        log_sm_bright = 13.0
         log_sm_step = 0.1
         log_stell_masses = np.arange(log_sm_faint, log_sm_bright, log_sm_step)
         ns = np.zeros(len(log_stell_masses))
@@ -284,14 +284,14 @@ class StellarMassFunctionTargetBGS(StellarMassFunction):
             z = np.array([self.zref,]) # Calculate at zref
             log_sm = np.array([log_stell_masses[i],])
             ns[i] = self.hod_bgs_simple.get_n_HOD(log_sm,z,f) #cumulative SMF
-           
+
         # convert to differential SMF
         log_stell_mass = (log_stell_masses[1:] + log_stell_masses[:-1]) / 2.
         n = (ns[:-1] - ns[1:]) / log_sm_step
-        
+
         # do a spline fit to the differential LF
         log_sm_step_table = 0.001
-        log_stell_masses = np.arange(log_sm_faint, 
+        log_stell_masses = np.arange(log_sm_faint,
                                      log_sm_bright + log_sm_step_table,
                                      log_sm_step_table)[::-1] # Inverse order needed to use cumsum later
         zs = np.ones(len(log_stell_masses)) * self.zref
@@ -302,14 +302,14 @@ class StellarMassFunctionTargetBGS(StellarMassFunction):
         ns = 10**splev(log_stell_masses, tck)
 
         # Transition to miniJPAS Schechter SMF at the faint end
-        smf_schechter = StellarMassFunctionSchechter(self.Phi_star, 
+        smf_schechter = StellarMassFunctionSchechter(self.Phi_star,
                                                      self.log_M_star,
                                                      self.alpha,
                                                      self.P1, self.P2, self.Q,
                                                      self.zref)
 
         ns_schechter = smf_schechter.Phi(log_stell_masses, zs)
-        
+
         #T = 1. / (1. + np.exp(5*(log_stell_masses - self.log_M_transition)))
         T = 1. / (1. + np.exp((self.log_M_transition - log_stell_masses)/self.w_trans))
         ns = ns*T + ns_schechter*(1 - T)
@@ -337,11 +337,11 @@ class StellarMassFunctionTargetBGS(StellarMassFunction):
         Returns:
             array of number densities/d(log(stellar_mass)) [h^3/Mpc^3]
         """
-        
+
         smf_miniJPAS = self.smf_miniJPAS.Phi(log_stell_mass, redshift)
 
         return smf_miniJPAS
-    
+
     def Phi_cumulative(self, log_stell_mass, redshift):
         """
         Cumulative stellar mass function as a function of log(stellar mass)
@@ -354,5 +354,5 @@ class StellarMassFunctionTargetBGS(StellarMassFunction):
         """
 
         smf_miniJPAS = self.smf_miniJPAS.Phi_cumulative(log_stell_mass, redshift)
-        
+
         return smf_miniJPAS
