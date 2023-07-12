@@ -1,5 +1,5 @@
 # Schechter fit to the evolution of the stellar mass function in miniJPAS,
 # and describing the approximation for the SMF to use in the code
 # Using approximation fixed on 2023/07/10
-# Phi_star,  log_M_star,  alpha,     P1,     P2,      Q,  zref, log_M_transition
-3.182e-3,        10.885,  -1.34, 0.1080, 0.2534, -0.432,   0.4,   8.5  
+# Phi_star,  log_M_star,  alpha,     P1,     P2,      Q,  zref, log_M_transition, width_transition
+3.182e-3,        10.885,  -1.34, 0.1080, 0.2534, -0.432,   0.4,   8.5,    1.0

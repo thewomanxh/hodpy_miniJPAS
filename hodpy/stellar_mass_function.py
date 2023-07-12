@@ -243,14 +243,14 @@ class StellarMassFunctionTargetBGS(StellarMassFunction):
         target_smf_file: tabulated file of SMF at z=zref 
                         (if it does not exist, it will be created at __init__)
         smf_param_file: file containing Schechter SMF parameters:
-            Phi_star, log_M_star, alpha, P1, P2, Q, zref, log_M_transition
+            Phi_star, log_M_star, alpha, P1, P2, Q, zref, log_M_transition, width_transition
     """
     
     def __init__(self, target_smf_file, smf_param_file, hod_bgs_simple):
 
         self.Phi_star, self.log_M_star, self.alpha, \
             self.P1, self.P2, self.Q, \
-            self.zref, self.log_M_transition = \
+            self.zref, self.log_M_transition, self.w_trans = \
                 np.loadtxt(smf_param_file, comments='#', delimiter=",")
 
         self.hod_bgs_simple = hod_bgs_simple
@@ -309,7 +309,9 @@ class StellarMassFunctionTargetBGS(StellarMassFunction):
                                                      self.zref)
 
         ns_schechter = smf_schechter.Phi(log_stell_masses, zs)
-        T = 1. / (1. + np.exp(5*(log_stell_masses - self.log_M_transition)))
+        
+        #T = 1. / (1. + np.exp(5*(log_stell_masses - self.log_M_transition)))
+        T = 1. / (1. + np.exp((self.log_M_transition - log_sm_s)/self.w_trans))
         ns = ns*T + ns_schechter*(1 - T)
 
         # convert back to cumulative SMF
