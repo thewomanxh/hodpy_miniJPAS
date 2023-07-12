@@ -311,7 +311,7 @@ class StellarMassFunctionTargetBGS(StellarMassFunction):
         ns_schechter = smf_schechter.Phi(log_stell_masses, zs)
         
         #T = 1. / (1. + np.exp(5*(log_stell_masses - self.log_M_transition)))
-        T = 1. / (1. + np.exp((self.log_M_transition - log_sm_s)/self.w_trans))
+        T = 1. / (1. + np.exp((self.log_M_transition - log_stell_masses)/self.w_trans))
         ns = ns*T + ns_schechter*(1 - T)
 
         # convert back to cumulative SMF
