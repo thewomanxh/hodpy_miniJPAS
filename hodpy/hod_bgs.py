@@ -228,7 +228,7 @@ class HOD_BGS(HOD):
             if replace_central_lookup: raise IOError
 
             # try to read 3d array of magnitudes from file
-            log_stell_masses = np.load(central_lookup_file)
+
 
             if log_stell_masses.shape != (len(log_masses), len(redshifts), len(xs)):
                 raise ValueError("Central lookup table has unexpected shape")
@@ -236,7 +236,7 @@ class HOD_BGS(HOD):
         except IOError:
             # file doesn't exist - fill in array of log(stellar masses)
             print("Generating lookup table of central galaxy stellar masses")
-            log_sm = np.arange(5, 14, 0.01)
+            log_sm = np.arange(5, 14, 0.01)[::-1] # invert to make 'searchsorted' work properly later
             arr_ones = np.ones(len(log_sm), dtype="f")
             for i in range(len(log_masses)):
                 for j in range(len(redshifts)):
@@ -284,7 +284,7 @@ class HOD_BGS(HOD):
             # file doesn't exist - fill in array of log(stellar masses)
             print("Generating lookup table of satellite galaxy stellar masses")
 
-            log_sm = np.arange(5, 14, 0.01)
+            log_sm = np.arange(5, 14, 0.01)[::-1] # invert to make 'searchsorted' work properly later
 
             log_sm_faint = self.kcorr.log_stellar_mass_faint(redshifts, self.mag_faint)
             arr_ones = np.ones(len(log_sm))
