@@ -140,7 +140,9 @@ class HOD_BGS(HOD):
         Returns:
             number density
         """
-        return quad(self.__integration_function, 10, 18, args=(log_stell_mass, redshift, f))[0]
+        return quad(self.__integration_function, 10, 18,
+                    args=(log_stell_mass, redshift, f),
+                    epsrel=1e-16)[0]
 
 
     def __root_function(self, f, log_sm, z):
@@ -641,7 +643,9 @@ class HOD_BGS_Simple(HOD):
         Returns:
             number density
         """
-        return quad(self.__integration_function, 10, 18, args=(log_stell_mass, redshift, f))[0]
+        return quad(self.__integration_function, 10, 18,
+                    args=(log_stell_mass, redshift, f),
+                    epsrel=1e-16)[0]
 
 
     def __initialize_mass_interpolator(self, L_s, M_t, a_m):
