@@ -118,6 +118,8 @@ class GalaxyCatalogue(Catalogue):
         
         # Log message
         print(f"Added {self.size} galaxies to the catalogue.")
+        # Temp:
+        print(f"Log(stellar mass): mean = {log_smass.mean()}, min = {log_smass.min()}, max = {log_smass.max()}")
 
 
     def _get_distances(self):
