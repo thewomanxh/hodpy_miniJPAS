@@ -230,7 +230,7 @@ class HOD_BGS(HOD):
             if replace_central_lookup: raise IOError
 
             # try to read 3d array of magnitudes from file
-
+            log_stell_masses = np.load(central_lookup_file)
 
             if log_stell_masses.shape != (len(log_masses), len(redshifts), len(xs)):
                 raise ValueError("Central lookup table has unexpected shape")
