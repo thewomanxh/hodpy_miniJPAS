@@ -269,7 +269,9 @@ class HOD_BGS(HOD):
         # arrays of mass, x, redshift, and 3d array of log(stell mass)
         # x is the ratio of Nsat(log_stell_mass,mass)/Nsat(log_stell_mass_faint,mass)
         log_masses = np.arange(10, 18, 0.02)
-        redshifts = np.arange(0, 1, 0.02)
+        # For some (unknown) reason, I get nan's for z=0, so avoid this value
+        # redshifts = np.arange(0, 1, 0.02)
+        redshifts = np.arange(0.01, 1, 0.02) 
         log_xs = np.arange(-12, 0.01, 0.05)
         log_stell_masses = np.zeros((len(log_masses), len(redshifts), len(log_xs)))
 
