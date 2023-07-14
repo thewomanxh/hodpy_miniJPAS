@@ -23,7 +23,7 @@ class StellarMassFunction(object):
 
         # Fill in 2d array of log stellar masses
         # Define array in inverse order so that 'searchsorted' works later
-        log_sm = np.arange(5, 13, 0.001)[::-1]
+        log_sm = np.arange(5, 14, 0.001)[::-1]
         for i in range(len(redshifts)):
             # find number density at each stellar mass in log_sm
             log_ns = np.log10(self.Phi_cumulative(log_sm, redshifts[i]))
@@ -78,7 +78,7 @@ class StellarMassFunction(object):
     def __Phi_zref(self, log_stell_mass):
         # returns a spline fit to the SMF at z=zref (using the cumulative SMF)
         delta = 0.001
-        log_sm = np.arange(5, 13, delta)
+        log_sm = np.arange(5, 14, delta)
         phi_cums = self.Phi_cumulative(log_sm, self.zref)
         phi = (phi_cums[:-1] - phi_cums[1:]) / delta
         # clip to avoid -infinity
@@ -273,7 +273,7 @@ class StellarMassFunctionTargetBGS(StellarMassFunction):
 
         # array of log stellar masses and corresponding number densities
         log_sm_faint = 5.0
-        log_sm_bright = 13.0
+        log_sm_bright = 14.0
         log_sm_step = 0.1
         log_stell_masses = np.arange(log_sm_faint, log_sm_bright, log_sm_step)
         ns = np.zeros(len(log_stell_masses))
