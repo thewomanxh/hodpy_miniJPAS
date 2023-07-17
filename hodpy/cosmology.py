@@ -122,7 +122,7 @@ class Cosmology(object):
         fact1 = 18*np.pi*np.pi
         fact2 = 0.399
         expon = 0.941
-        Omz = self.OmegaM * ((1 + z)**3)
+        Omz = self.cosmo_nbodykit.Om(z)
 
         return fact1*(1. + (fact2*pow((1./Omz) - 1., expon)))
 
