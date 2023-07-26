@@ -23,7 +23,7 @@ class Colour(object):
         Returns:
             array of u-r rest-frame colours
         """
-        colour = 2.09 + 0.282*(log_stellar_mass - 10) - 0.401*(redshift - 0.4)
+        colour = 1.867 + 0.488*(log_stellar_mass - 10) - 0.911*(redshift - 0.4)
         return colour
 
     def red_rms(self, log_stellar_mass, redshift):
@@ -38,7 +38,7 @@ class Colour(object):
         Returns:
             array of u-r rest-frame colours
         """
-        colour = 0.155 - 0.010*(log_stellar_mass - 10) + 0.025*(redshift - 0.4)
+        colour = 0.193 - 0.050*(log_stellar_mass - 10) + 0.086*(redshift - 0.4)
         return colour
 
     def blue_mean(self, log_stellar_mass, redshift):
@@ -53,7 +53,7 @@ class Colour(object):
         Returns:
             array of u-r rest-frame colours
         """
-        colour = 1.581 + 0.689*(log_stellar_mass - 10) - 1.244*(redshift - 0.4)
+        colour = 1.542 + 0.628*(log_stellar_mass - 10) - 1.255*(redshift - 0.4)
         return colour
 
     def blue_rms(self, log_stellar_mass, redshift):
@@ -69,7 +69,7 @@ class Colour(object):
         Returns:
             array of u-r rest-frame colours
         """
-        colour = 0.232 + 0.036*(log_stellar_mass - 10) - 0.165*(redshift - 0.4)
+        colour = 0.227 + 0.039*(log_stellar_mass - 10) - 0.156*(redshift - 0.4)
         return colour
 
     def satellite_mean(self, log_stellar_mass, redshift):
@@ -86,7 +86,7 @@ class Colour(object):
         Returns:
             array of u-r rest-frame colours
         """
-        colour = 2.003 + 0.340*(log_stellar_mass - 10) - 0.401*(redshift - 0.4)
+        colour = 1.705 + 0.569*(log_stellar_mass - 10) - 0.911*(redshift - 0.4)
         return colour
 
     def fraction_blue(self, log_stellar_mass, redshift):
