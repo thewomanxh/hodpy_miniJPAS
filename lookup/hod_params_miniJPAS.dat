@@ -1,6 +1,6 @@
 # Fits to the HOD parameters at z=0.4 from the miniJPAS
 # correlation function as a function of log(stellar mass)
-# Model defined as of 2023/07/10
+# Model defined as of 2023/07/28
 #
 # Mmin_Ls,      Mmin_Mt,        Mmin_am,        -
 # M1_Ls,        M1_Mt,          M1_am,          -
@@ -8,8 +8,8 @@
 # alpha_A,      alpha_B,        alpha_C,        -
 # sigma_A,      sigma_B,        sigma_C,        sigma_D
 #
-5.59e+9,   2.86e+11,     0.664, 0
-2.27e+10,  2.38e+13,     0.276, 0
+1.52e+10,   5.12e+11,     0.375, 0
+1.52e+10,   1.83e+13,     0.375, 0
 0,                0,         0, 0
-0.095,          90.,      12.3, 0
+0.095,          91.6,      13.1, 0
 0.05,          0.07,      11.0, 2.5

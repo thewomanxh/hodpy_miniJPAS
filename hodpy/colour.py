@@ -123,7 +123,7 @@ class Colour(object):
             array of fraction of central galaxies (number of satellites divided by number of centrals)
         """
         # number of satellites divided by number of centrals
-        nsat_ncen = 0.0849 * (2 - erfc((10.94 - log_stellar_mass)/0.371))
+        nsat_ncen = 0.0993 * (2 - erfc((10.686 - log_stellar_mass)/1.055))
         return 1 / (1 + nsat_ncen)
 
 
