@@ -12,7 +12,8 @@ from hodpy.colour import Colour
 from hodpy import lookup
 
 
-def main(input_file, output_file, mag_faint, rand_seed=None):
+def main(input_file, output_file, mag_faint, rand_seed=None,
+         input_format='hdf5', input_nplc=64):
 
     import warnings
     warnings.filterwarnings("ignore")
@@ -21,7 +22,7 @@ def main(input_file, output_file, mag_faint, rand_seed=None):
     np.random.seed(rand_seed)
 
     # create halo catalogue
-    halo_cat = PinoCatalogue(input_file)
+    halo_cat = PinoCatalogue(input_file, input_format, input_nplc)
 
     # empty galaxy catalogue
     gal_cat  = BGSGalaxyCatalogue(halo_cat)
@@ -52,8 +53,12 @@ def main(input_file, output_file, mag_faint, rand_seed=None):
 if __name__ == "__main__":
 
     input_file = "input/halo_catalogue_pinocchio.hdf5"
+    input_format = 'hdf5'
+    input_nplc = 0  # Only relevant if input_format = 'plc'
+
     output_file = "output/galaxy_catalogue_pinocchio.hdf5"
     mag_faint = 20.0 # faintest apparent magnitude
     rand_seed = 4242 # seed for random number generator
 
-    main(input_file, output_file, mag_faint, rand_seed)
+    main(input_file, output_file, mag_faint,
+         rand_seed=rand_seed, input_format=input_format, input_nplc=input_nplc)
