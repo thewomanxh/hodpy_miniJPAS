@@ -176,7 +176,7 @@ class HOD_BGS(HOD):
         # creates a RegularGridInterpolator object used for finding
         # the 'slide factor' as a function of mag and z
 
-        log_stell_masses = np.arange(5, 13, 0.1)
+        log_stell_masses = np.arange(7, 12.6, 0.1)
         redshifts = np.arange(0, 1.01, 0.05)
 
         try:
@@ -221,8 +221,8 @@ class HOD_BGS(HOD):
 
         # arrays of mass, x, redshift, and 3d array of magnitudes
         # x is the scatter in the central luminosity from the mean
-        log_masses = np.arange(10, 18, 0.02)
-        redshifts = np.arange(0, 1, 0.02)
+        log_masses = np.arange(11, 18, 0.02)
+        redshifts = np.arange(0, 1.01, 0.02)
         xs = np.arange(-3.5, 3.501, 0.02)
         log_stell_masses = np.zeros((len(log_masses), len(redshifts), len(xs)))
 
@@ -268,10 +268,8 @@ class HOD_BGS(HOD):
 
         # arrays of mass, x, redshift, and 3d array of log(stell mass)
         # x is the ratio of Nsat(log_stell_mass,mass)/Nsat(log_stell_mass_faint,mass)
-        log_masses = np.arange(10, 18, 0.02)
-        # For some (unknown) reason, I get nan's for z=0, so avoid this value
-        # redshifts = np.arange(0, 1, 0.02)
-        redshifts = np.arange(0.01, 1, 0.02) 
+        log_masses = np.arange(11, 18, 0.02)
+        redshifts = np.arange(0, 1.01, 0.02)
         log_xs = np.arange(-12, 0.01, 0.05)
         log_stell_masses = np.zeros((len(log_masses), len(redshifts), len(log_xs)))
 
